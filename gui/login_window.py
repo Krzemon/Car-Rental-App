@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-from database.db_connector import initialize_connection, close_connection, authenticate_user
+from database.db_connector import initialize_connection, authenticate_user
 
 class LoginWindow(QWidget):
     def __init__(self):
@@ -29,11 +29,6 @@ class LoginWindow(QWidget):
 
         self.setLayout(self.layout)
 
-    def closeEvent(self, event):
-        """Zamyka połączenie z bazą danych, gdy aplikacja jest zamykana."""
-        close_connection()
-        event.accept()
-
     def login(self):
         email = self.email_input.text()
         password = self.password_input.text()
@@ -46,7 +41,6 @@ class LoginWindow(QWidget):
         user = authenticate_user(email, password)
 
         if user:
-            # QMessageBox.information(self, "Success", f"Welcome, {user['role']}!")
             self.open_role_window(user['role'])
         else:
             QMessageBox.warning(self, "Login Failed", "Invalid email or password.")
@@ -61,20 +55,19 @@ class LoginWindow(QWidget):
             self.open_admin_window()
 
     def open_customer_window(self):
-        from gui.customer_window import CustomerWindow
+        from gui.customer.customer_window import CustomerWindow
         self.customer_window = CustomerWindow()
         self.customer_window.show()
-        self.close()
+        self.hide()
 
     def open_worker_window(self):
-        from gui.worker_window import WorkerWindow
+        from gui.employee.worker_window import WorkerWindow
         self.worker_window = WorkerWindow()
         self.worker_window.show()
-        self.close()
+        self.hide()
 
     def open_admin_window(self):
-        from gui.admin_window import AdminWindow
+        from gui.admin.admin_window import AdminWindow
         self.admin_window = AdminWindow()
         self.admin_window.show()
-        self.close()
-
+        self.hide()
