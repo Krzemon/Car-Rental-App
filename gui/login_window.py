@@ -1,49 +1,58 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-from database.db_connector import initialize_connection, authenticate_user
+from database.db_connector import initialize_connection, authenticate_user, get_connection
+from PyQt6.QtGui import QFont
+from gui.register_window import RegisterWindow
+import psycopg2
 
 class LoginWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Login")
-        self.setGeometry(100, 100, 300, 250)
-
-        # Inicjalizowanie połączenia z bazą danych przy starcie aplikacji
-        initialize_connection()
-
+        self.app_title = "Car Rental System"
+        self.setWindowTitle("Logowanie")
+        self.setGeometry(100, 100, 300, 150)
+        
+        initialize_connection() # Inicjalizowanie połączenia z bazą danych przy starcie
         self.layout = QVBoxLayout()
 
+        title_font = QFont("Lora", 12, QFont.Weight.Bold)
+        self.title_label = QLabel("Aplikacja wypożyczalni samochodów")
+        self.title_label.setFont(title_font)
+
         self.email_input = QLineEdit(self)
-        self.email_input.setPlaceholderText("Email")
-
+        self.email_input.setPlaceholderText("E-mail")
         self.password_input = QLineEdit(self)
-        self.password_input.setPlaceholderText("Password")
+        self.password_input.setPlaceholderText("Hasło")
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-
-        self.login_button = QPushButton("Login", self)
+        self.login_button = QPushButton("Zaloguj", self)
         self.login_button.clicked.connect(self.login)
+        self.register_button = QPushButton("Zarejestruj", self)
+        self.register_button.clicked.connect(self.open_register_window)
 
-        self.layout.addWidget(QLabel("Enter your credentials"))
+        self.layout.addWidget(self.title_label)
+        self.layout.addWidget(QLabel("Wpisz dane logowania:"))
         self.layout.addWidget(self.email_input)
         self.layout.addWidget(self.password_input)
         self.layout.addWidget(self.login_button)
-
+        self.layout.addWidget(self.register_button)
         self.setLayout(self.layout)
 
     def login(self):
         email = self.email_input.text()
         password = self.password_input.text()
-
         if not email or not password:
-            QMessageBox.warning(self, "Input Error", "Please fill in both fields.")
+            QMessageBox.warning(self, "Input Error", "Proszę wprowadzić e-mail i hasło.")
             return
-
-        # Weryfikacja danych logowania
-        user = authenticate_user(email, password)
-
+        user = authenticate_user(email, password) # Weryfikacja danych logowania
         if user:
             self.open_role_window(user['role'])
         else:
-            QMessageBox.warning(self, "Login Failed", "Invalid email or password.")
+            QMessageBox.warning(self, "Login Failed", "Logowanie nie powiodło się. Spróbuj ponownie.")
+
+    def open_register_window(self):
+        """Otwórz okno rejestracji."""
+        self.register_window = RegisterWindow()
+        self.register_window.show()
+        self.close()
 
     def open_role_window(self, role):
         """W zależności od roli użytkownika otwórz odpowiednie okno."""

@@ -5,14 +5,12 @@ from database.db_connector import initialize_connection, close_connection
 
 
 def main():
-    # Inicjalizacja połączenia z bazą danych
     initialize_connection()
 
     app = QApplication(sys.argv)
     login_window = LoginWindow()
     login_window.show()
 
-    # Uruchomienie aplikacji
     exit_code = app.exec()
 
     # Zamknięcie połączenia przy wyjściu

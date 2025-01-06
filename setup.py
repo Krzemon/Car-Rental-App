@@ -4,7 +4,7 @@ setup(
     name="CarRentalSystem",
     version="1.0.0",
     description="Python app with GUI connecting to PostgreSQL",
-    author="Your Name",
+    author="Przemysław Ryś",
     packages=find_packages(),  # Automatycznie wykrywa wszystkie pakiety
     install_requires=["psycopg2"],
     entry_points={
@@ -14,3 +14,5 @@ setup(
     },
     include_package_data=True,
 )
+
+# chyba to instalator, zostawiam na koniec
