@@ -52,7 +52,7 @@ class LoginWindow(QWidget):
         """Otwórz okno rejestracji."""
         self.register_window = RegisterWindow()
         self.register_window.show()
-        self.close()
+        # self.close()
 
     def open_role_window(self, role):
         """W zależności od roli użytkownika otwórz odpowiednie okno."""

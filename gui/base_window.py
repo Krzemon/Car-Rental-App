@@ -4,12 +4,14 @@ from PyQt6.QtCore import Qt, QSize, QTimer
 
 from database.db_connector import close_connection, get_connection
 
+font = QFont("Lora", 12, QFont.Weight.Bold)
+
 class BaseWindow(QWidget):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Aplikacja wypożyczalni samochodów")
-        self.setGeometry(100, 100, 800, 600)
+        self.setGeometry(100, 100, 1000, 600)
         self.setStyleSheet("background-color: #2f2f2f; color: white;")
 
         self.layout = QVBoxLayout(self)
@@ -56,8 +58,8 @@ class BaseWindow(QWidget):
 
         # Dodanie pasek narzędzi
         self.layout.addLayout(self.tool_layout)
-        self.status_bar = QStatusBar(self)
-        self.layout.addWidget(self.status_bar)
+        # self.status_bar = QStatusBar(self)
+        # self.layout.addWidget(self.status_bar)
 
         self.is_dark_mode = True
 
@@ -82,11 +84,11 @@ class BaseWindow(QWidget):
         if self.is_dark_mode:
             self.setStyleSheet("background-color: white; color: black;")
             self.dark_light_mode_button.setToolTip("Włącz tryb ciemny")
-            self.status_bar.showMessage("Włączono tryb jasny", 2000)
+            # self.status_bar.showMessage("Włączono tryb jasny", 2000)
         else:
             self.setStyleSheet("background-color: #2f2f2f; color: white;")
             self.dark_light_mode_button.setToolTip("Włącz tryb jasny")
-            self.status_bar.showMessage("Włączono tryb ciemny", 2000)
+            # self.status_bar.showMessage("Włączono tryb ciemny", 2000)
         self.is_dark_mode = not self.is_dark_mode
 
     def logout(self):
