@@ -30,12 +30,10 @@ class User:
                 email=row.get('email'),
                 role=row.get('role')
             )
-        elif isinstance(row, (tuple, list)) and len(row) == 3:  # Obsługa krotek/list
-            user_id, email, role = row
-            return cls(user_id, email, role)
+        elif isinstance(row, (tuple, list)) and len(row) == 3:
+            return cls(*row)
         else:
             raise ValueError(f"Nieprawidłowy wiersz: {row}")
-
 
     @classmethod
     def get_all(cls, connection):
@@ -56,6 +54,8 @@ class User:
             return []
         finally:
             cursor.close()
+
+# --------------------------------------------
 
 class Employee:
     def __init__(self, employee_id, first_name, last_name, address, phone_number, email):
@@ -124,6 +124,8 @@ class Employee:
         finally:
             cursor.close()
 
+# --------------------------------------------
+
 class Customer:
     def __init__(self, customer_id, first_name, last_name, address, phone_number, email):
         """
@@ -166,7 +168,7 @@ class Customer:
                 phone_number=row.get('phone_number'),
                 email=row.get('email')
             )
-        elif isinstance(row, (tuple, list)) and len(row) == 6:  # Obsługa krotek/list
+        elif isinstance(row, (tuple, list)) and len(row) == 6:
             return cls(*row)
         else:
             raise ValueError(f"Nieprawidłowy wiersz: {row}")
@@ -191,9 +193,10 @@ class Customer:
         finally:
             cursor.close()
 
+# --------------------------------------------
 
 class Car:
-    def __init__(self, car_id, make, model, year, license_plate, daily_rate, vin, status, fuel_type, insurance_status, seat_count, color):
+    def __init__(self, car_id, make, model, year, license_plate, daily_rate, vin, status, fuel_type, insurance_status, seat_count, color, _type):
         """
         Inicjalizuje obiekt Car.
         :param car_id: ID samochodu (int)
@@ -208,6 +211,7 @@ class Car:
         :param insurance_status: Status ubezpieczenia (str)
         :param seat_count: Liczba miejsc w samochodzie (int)
         :param color: E-mail klienta (str)
+        :param type: Typ samochodu (str)
         """
         self.car_id = car_id
         self.make = make
@@ -221,6 +225,7 @@ class Car:
         self.insurance_status = insurance_status
         self.seat_count = seat_count
         self.color = color
+        self.type = _type
 
     def __repr__(self):
         """
@@ -229,7 +234,7 @@ class Car:
         return (f"Car(car_id={self.car_id}, make='{self.make}', model='{self.model}', "
                 f"year={self.year}, license_plate='{self.license_plate}', daily_rate={self.daily_rate}, "
                 f"vin='{self.vin}', status='{self.status}', fuel_type='{self.fuel_type}', "
-                f"insurance_status='{self.insurance_status}', seat_count={self.seat_count}, color='{self.color}')")
+                f"insurance_status='{self.insurance_status}', seat_count={self.seat_count}, color='{self.color}', type='{self.type}')")
     
     @classmethod
     def from_db_row(cls, row):
@@ -251,9 +256,10 @@ class Car:
                 fuel_type=row.get('fuel_type'),
                 insurance_status=row.get('insurance_status'),
                 seat_count=row.get('seat_count'),
-                color=row.get('color')
+                color=row.get('color'),
+                _type=row.get('type')
             )
-        elif isinstance(row, (tuple, list)) and len(row) == 6:  # Obsługa krotek/list
+        elif isinstance(row, (tuple, list)) and len(row) == 13:
             return cls(*row)
         else:
             raise ValueError(f"Nieprawidłowy wiersz: {row}")
@@ -267,7 +273,7 @@ class Car:
         """
         cursor = connection.cursor()
         try:
-            cursor.execute("SELECT car_id, make, model, year, license_plate, daily_rate, vin, status, fuel_type, insurance_status, seat_count, color FROM projekt_bd1.cars")
+            cursor.execute("SELECT car_id, make, model, year, license_plate, daily_rate, vin, status, fuel_type, insurance_status, seat_count, color, type FROM projekt_bd1.cars")
             rows = cursor.fetchall()
 
             cars = [cls.from_db_row(row) for row in rows]

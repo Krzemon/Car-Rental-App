@@ -20,6 +20,7 @@ class AdminWindow(BaseWindow):
         self.active_filter = False
         self.color_translations = self.load_color_translations()
         self.fuel_translations = self.load_fuel_translations()
+        self.type_translations = self.load_type_translations()
 
 
         #########################################################
@@ -142,29 +143,34 @@ class AdminWindow(BaseWindow):
         filter_label.setFixedWidth(200)
         color_layout = QHBoxLayout()
         self.color_filter_combo = QComboBox()
-
         self.color_filter_combo.addItems(["Wszystkie", "Czerwony", "Niebieski", "Czarny", "Biały", "Szary", "Pomarańczowy", "Beżowy", "Zielony", "Żółty"])
         color_layout.addWidget(QLabel("Kolor:", alignment=Qt.AlignmentFlag.AlignLeft))
         color_layout.addWidget(self.color_filter_combo)
-
         filter_layout.addLayout(color_layout)
 
         # Filtrowanie po rodzaju paliwa
         fuel_layout = QHBoxLayout()
         self.fuel_filter_combo = QComboBox()
-
         self.fuel_filter_combo.addItems(["Wszystkie", "Benzyna", "Diesel", "Elektryczny", "Hybryda"])
         fuel_layout.addWidget(QLabel("Rodzaj paliwa:", alignment=Qt.AlignmentFlag.AlignLeft))
         fuel_layout.addWidget(self.fuel_filter_combo)
-
         filter_layout.addLayout(fuel_layout)
 
+        # Filtrowanie po liczbie miejsc
         seats_layout = QHBoxLayout()
-        self.seats_filter_spinbox = QSpinBox()
-        self.seats_filter_spinbox.setRange(2, 9)  # zakres miejsc
-        seats_layout.addWidget(QLabel("Liczba miejsc:"))
-        seats_layout.addWidget(self.seats_filter_spinbox)
+        self.seats_filter_combo = QComboBox()
+        self.seats_filter_combo.addItems(["Wszystkie", '2', '4', '5', '7', '9'])
+        seats_layout.addWidget(QLabel("Liczba miejsc: ", alignment=Qt.AlignmentFlag.AlignLeft))
+        seats_layout.addWidget(self.seats_filter_combo)
         filter_layout.addLayout(seats_layout)
+
+        # Filtrowanie po typie pojazdu
+        type_layout = QHBoxLayout()
+        self.type_filter_combo = QComboBox()
+        self.type_filter_combo.addItems(["Wszystkie", "Coupe", "Hatchback", "Kabriolet", "Kombi", "Sedan", "SUV", "Van"])
+        type_layout.addWidget(QLabel("Typ pojazdu: ", alignment=Qt.AlignmentFlag.AlignLeft))
+        type_layout.addWidget(self.type_filter_combo)
+        filter_layout.addLayout(type_layout)
 
         year_layout_a = QHBoxLayout()
         year_layout_b = QHBoxLayout()
@@ -228,10 +234,10 @@ class AdminWindow(BaseWindow):
 
         self.table = QTableWidget()
         self.table.setRowCount(0)
-        self.table.setColumnCount(12)
+        self.table.setColumnCount(13)
         self.table.setHorizontalHeaderLabels([
             'ID samochodu', 'Marka', 'Model', 'Rok', 'Nr rejestracyjny', 'Dzienna stawka',
-            'VIN', 'Status', 'Rodzaj paliwa', 'Status ubezpieczenia', 'Liczba miejsc', 'Kolor'
+            'VIN', 'Status', 'Rodzaj paliwa', 'Status ubezpieczenia', 'Liczba miejsc', 'Kolor', 'Typ pojazdu'
         ])
         self.load_cars_to_table()
 
@@ -291,6 +297,19 @@ class AdminWindow(BaseWindow):
             return {}
         except json.JSONDecodeError:
             print("Błąd podczas parsowania pliku fuel_type.json.")
+            return {}
+
+    def load_type_translations(self):
+        """Wczytuje tłumaczenia typow pojazdow z pliku JSON."""
+        try:
+            type_file = os.path.join("config", "translated", "type.json")
+            with open(type_file, "r", encoding="utf-8") as file:
+                return json.load(file)
+        except FileNotFoundError:
+            print("Nie znaleziono pliku type.json.")
+            return {}
+        except json.JSONDecodeError:
+            print("Błąd podczas parsowania pliku type.json.")
             return {}
         
     # Funkcje pomocnicze do ładowania danych do tabeli
@@ -359,7 +378,9 @@ class AdminWindow(BaseWindow):
         """Resetuje wartości filtrów."""
         self.color_filter_combo.setCurrentIndex(0)
         self.fuel_filter_combo.setCurrentIndex(0)
-        self.seats_filter_spinbox.setValue(2)
+        self.seats_filter_combo.setCurrentIndex(0)
+        self.type_filter_combo.setCurrentIndex(0)
+
         self.year_min.setValue(2000)
         self.year_max.setValue(2025)
         self.price_min.setValue(0)
@@ -377,7 +398,9 @@ class AdminWindow(BaseWindow):
         filtered_cars = []
         selected_color = self.color_filter_combo.currentText()
         selected_fuel = self.fuel_filter_combo.currentText()
-
+        selected_seats = self.seats_filter_combo.currentText()
+        selected_type = self.type_filter_combo.currentText()
+        
         is_filter_applied = False
 
         for car in self.cars:
@@ -399,6 +422,20 @@ class AdminWindow(BaseWindow):
                     continue
                 is_filter_applied = True
 
+            if selected_type != "Wszystkie":
+                english_type = {v: k for k, v in self.type_translations.items()}.get(selected_type)
+                if english_type is None:
+                    print(f"Błąd: nie znaleziono tłumaczenia dla {selected_type}")
+                    continue
+                if car.type != english_type:
+                    continue
+                is_filter_applied = True
+
+            if selected_seats != "Wszystkie":
+                if car.seat_count != int(selected_seats):
+                    continue
+                is_filter_applied = True
+
             if not (self.year_min.value() <= car.year <= self.year_max.value()):
                 continue
             else:
@@ -408,11 +445,7 @@ class AdminWindow(BaseWindow):
                 continue
             else:
                 is_filter_applied = True
-
-
-            # if self.seats_filter_spinbox.value() != int(car.seat_count):
-            #     continue
-
+                
             filtered_cars.append(car)
 
         self.active_filter = is_filter_applied
@@ -497,46 +530,6 @@ class AdminWindow(BaseWindow):
             self.table.setItem(row_index, 9, QTableWidgetItem(str(car.insurance_status)))
             self.table.setItem(row_index, 10, QTableWidgetItem(str(car.seat_count)))
             self.table.setItem(row_index, 11, QTableWidgetItem(str(car.color)))
+            self.table.setItem(row_index, 12, QTableWidgetItem(str(car.type)))
 
         self.table.resizeColumnsToContents()  # dopasowanie szerokości kolumn
-
-
-    # def load_cars_to_table(self):
-    #     """Laduje samochody do tabeli."""
-    #     try:
-    #         connection = get_connection()
-    #         cars = Car.get_all(connection)
-    #         self.table.setRowCount(len(cars))
-
-    #         for row_index, car in enumerate(cars):
-    #             self.table.setItem(row_index, 0, QTableWidgetItem(str(car.car_id)))
-    #             self.table.setItem(row_index, 1, QTableWidgetItem(str(car.make)))
-    #             self.table.setItem(row_index, 2, QTableWidgetItem(str(car.model)))
-    #             self.table.setItem(row_index, 3, QTableWidgetItem(str(car.year)))
-    #             self.table.setItem(row_index, 4, QTableWidgetItem(str(car.license_plate)))
-    #             self.table.setItem(row_index, 5, QTableWidgetItem(str(car.daily_rate)))
-    #             self.table.setItem(row_index, 6, QTableWidgetItem(str(car.vin)))
-    #             self.table.setItem(row_index, 7, QTableWidgetItem(str(car.status)))
-    #             self.table.setItem(row_index, 8, QTableWidgetItem(str(car.fuel_type)))
-    #             self.table.setItem(row_index, 9, QTableWidgetItem(str(car.insurance_status)))
-    #             self.table.setItem(row_index, 10, QTableWidgetItem(str(car.seat_count)))
-    #             self.table.setItem(row_index, 11, QTableWidgetItem(str(car.color)))
-    #     except Exception as e:
-    #         print(f"Błąd ładowania samochodow do tabeli: {e}")
-
-    # def create_cars_view(self):
-        # widget = QWidget()
-        # layout = QVBoxLayout()
-
-        # self.table = QTableWidget()
-        # self.table.setRowCount(0)
-        # self.table.setColumnCount(12)
-        # self.table.setHorizontalHeaderLabels([
-        #     'ID samochodu', 'Marka', 'Model', 'Rok', 'Nr rejestracyjny', 'Dzienna stawka',
-        #     'VIN', 'Status', 'Rodzaj paliwa', 'Status ubezpieczenia', 'Liczba miejsc', 'Kolor'
-        # ])
-        # self.load_cars_to_table()
-        # layout.addWidget(self.table)
-
-        # widget.setLayout(layout)
-        # return widget

@@ -1,0 +1,9 @@
+{
+    "coupe": "Coupe",
+    "hatchback": "Hatchback",
+    "cabriolet": "Kabriolet",
+    "estate": "Kombi",
+    "sedan": "Sedan",
+    "suv": "SUV",
+    "van": "Van"
+}
