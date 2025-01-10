@@ -129,7 +129,7 @@ class AdminWindow(BaseWindow):
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
         filter_layout = QVBoxLayout()
-
+        
         filter_layout.setContentsMargins(0, 0, 0, 0)  # Usuwamy marginesy
         right_widget = QWidget()  # Widget, który będzie kontenerem layoutu
         right_widget.setLayout(filter_layout)
@@ -184,8 +184,8 @@ class AdminWindow(BaseWindow):
         self.year_min_label = QLabel(str(self.year_min.value()))
         self.year_max_label = QLabel(str(self.year_max.value()))
 
-        self.year_min.valueChanged.connect(self.sync_min_max) # min < max
-        self.year_max.valueChanged.connect(self.sync_min_max)
+        self.year_min.valueChanged.connect(self.sync_min) # min < max
+        self.year_max.valueChanged.connect(self.sync_max)
 
         filter_layout.addWidget(QLabel("Rok produkcji:"))
         year_layout_a.addWidget(QLabel("od:"))
@@ -245,7 +245,6 @@ class AdminWindow(BaseWindow):
         vertical_line.setFrameShadow(QFrame.Shadow.Sunken)
         Hlayout.addWidget(vertical_line)
 
-        # Hlayout.addLayout(filter_layout)
         Hlayout.addWidget(right_widget)
         layout.addLayout(Hlayout)
 
@@ -253,17 +252,20 @@ class AdminWindow(BaseWindow):
         return widget
 
     def update_year_min_label(self):
-        self.year_min_label.setText(str(self.year_min.value()))  # Aktualizowanie wartości etykiety
+        self.year_min_label.setText(str(self.year_min.value()))
 
     def update_year_max_label(self):
-        self.year_max_label.setText(str(self.year_max.value()))  # Aktualizowanie wartości etykiety
+        self.year_max_label.setText(str(self.year_max.value()))
 
-    def sync_min_max(self):
+    def sync_min(self):
         """Synchronizowanie suwaków 'od' i 'do', aby 'do' nie mogło być mniejsze od 'od'."""
         if self.year_min.value() > self.year_max.value():
-            self.year_max.setValue(self.year_min.value())  # Ustawiamy 'do' na 'od' jeśli jest mniejsze
-        elif self.year_max.value() < self.year_min.value():
-            self.year_min.setValue(self.year_max.value())  # Ustawiamy 'od' na 'do' jeśli jest większe
+            self.year_max.setValue(self.year_min.value())
+
+    def sync_max(self):
+        """Synchronizowanie suwaków 'od' i 'do', aby 'do' nie mogło być mniejsze od 'od'."""
+        if self.year_max.value() < self.year_min.value():
+            self.year_min.setValue(self.year_max.value())
 
     def load_color_translations(self):
         """Wczytuje tłumaczenia kolorów z pliku JSON."""
@@ -376,7 +378,6 @@ class AdminWindow(BaseWindow):
         selected_color = self.color_filter_combo.currentText()
         selected_fuel = self.fuel_filter_combo.currentText()
 
-        # self.active_filter = False
         is_filter_applied = False
 
         for car in self.cars:
@@ -385,7 +386,7 @@ class AdminWindow(BaseWindow):
                 if english_color is None:
                     print(f"Błąd: nie znaleziono tłumaczenia dla {selected_color}")
                     continue
-                if car.color != english_color:  # Porównujemy z wartością z bazy
+                if car.color != english_color:
                     continue
                 is_filter_applied = True
 
@@ -398,12 +399,16 @@ class AdminWindow(BaseWindow):
                     continue
                 is_filter_applied = True
 
+            if not (self.year_min.value() <= car.year <= self.year_max.value()):
+                continue
+            else:
+                is_filter_applied = True
 
-            # if not (self.year_min.value() <= int(car.year) <= self.year_max.value()):
-            #     continue
+            if not (self.price_min.value() <= car.daily_rate <= self.price_max.value()):
+                continue
+            else:
+                is_filter_applied = True
 
-            # if not (self.price_min.value() <= float(car.daily_rate) <= self.price_max.value()):
-            #     continue
 
             # if self.seats_filter_spinbox.value() != int(car.seat_count):
             #     continue
