@@ -65,21 +65,21 @@ class LoginWindow(QWidget):
 
     def open_customer_window(self):
         # from gui.customer.customer_window import CustomerWindow
-        from gui.customer_window import CustomerWindow
+        from gui.customer.customer_window import CustomerWindow
         self.customer_window = CustomerWindow()
         self.customer_window.show()
         self.hide()
 
     def open_worker_window(self):
         # from gui.employee.worker_window import WorkerWindow
-        from gui.employee_window import EmployeeWindow
+        from gui.employee.employee_window import EmployeeWindow
         self.employee_window = EmployeeWindow()
         self.employee_window.show()
         self.hide()
 
     def open_admin_window(self):
         # from gui.admin.admin_window import AdminWindow
-        from gui.admin_window import AdminWindow
+        from gui.admin.admin_window import AdminWindow
         self.admin_window = AdminWindow()
         self.admin_window.show()
         self.hide()
