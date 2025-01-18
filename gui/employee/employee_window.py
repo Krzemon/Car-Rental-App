@@ -1,8 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
-from gui.base_window import BaseWindow, font
+from PyQt6.QtWidgets import QTabWidget
 
+from gui.base_window import BaseWindow
 from gui.employee.car_view import CarView
 from gui.employee.rental_view import RentalView
 from gui.employee.payment_view import PaymentView

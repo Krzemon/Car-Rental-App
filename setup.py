@@ -14,5 +14,3 @@ setup(
     },
     include_package_data=True,
 )
-
-# chyba to instalator, zostawiam na koniec

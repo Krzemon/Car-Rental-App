@@ -1,13 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox, QStatusBar, QTabWidget, QGridLayout, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, QSpacerItem, QSizePolicy, QFrame
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTabWidget, QGridLayout, QPushButton, QTableWidget, QTableWidgetItem, QSpacerItem, QSizePolicy, QFrame
+from PyQt6.QtGui import QFont, QPixmap
+from PyQt6.QtCore import Qt
+
 from database.db_connector import get_connection
 from gui.base_window import BaseWindow
 from database.models import Car
 import psycopg2
 from gui.customer.car_widget import CarWidget
-from datetime import datetime
 from datetime import date
 
 class CustomerWindow(BaseWindow):

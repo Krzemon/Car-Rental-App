@@ -1,9 +1,9 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QTabWidget, QTableWidget, QTableWidgetItem
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtCore import Qt
 
 from database.db_connector import get_connection
-from gui.base_window import font, big_font, light_font
+from gui.base_window import big_font, light_font
 
 desc_1 = "Generuje raport w postaci tabeli najpopularniejszych samochodów wypożyczanych przez klientów w danym okresie czasu."
 desc_2 = "Generuje raport w postaci tabeli podsumowującej wynajmy dla każdego klienta."

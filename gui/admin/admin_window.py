@@ -1,7 +1,5 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
-from gui.base_window import BaseWindow, font
+from PyQt6.QtWidgets import QTabWidget
+from gui.base_window import BaseWindow
 
 from gui.admin.rental_view import RentalView
 from gui.admin.user_view import UserView
@@ -39,5 +37,5 @@ class AdminWindow(BaseWindow):
         self.tabs.addTab(self.cars_widget, "Samochody")
 
         # Dodanie zakładek do layoutu klasy bazowej
-        self.layout.addWidget(self.tabs)  # Używamy layoutu z klasy BaseWindow
-        self.setLayout(self.layout)  # Zachowujemy layout z klasy BaseWindow
+        self.layout.addWidget(self.tabs)
+        self.setLayout(self.layout)

@@ -1,10 +1,8 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox, QStatusBar, QTabWidget, QGridLayout, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtCore import Qt, QTimer
 
 from database.db_connector import get_connection
-from gui.base_window import BaseWindow
-from database.models import Car
 import psycopg2
 
 class CarWidget(QWidget):
@@ -20,17 +18,6 @@ class CarWidget(QWidget):
             f"resources/images/cars/{car.make.lower().replace(' ', '-')}_{car.model.lower().replace(' ', '-').replace('.', '-')}_{car.year}a.jpg",
             f"resources/images/cars/{car.make.lower().replace(' ', '-')}_{car.model.lower().replace(' ', '-').replace('.', '-')}_{car.year}b.jpg"
         ]
-
-
-                # image_path = f"resources/images/cars/{make.lower().replace(' ', '-')}_{model.lower().replace(' ', '-').replace('.', '-')}_{year}a.jpg"
-                # image_label = QLabel()
-                # pixmap = QPixmap(image_path)
-                # if not pixmap.isNull():
-                #     pixmap = pixmap.scaled(800, 500, Qt.AspectRatioMode.KeepAspectRatio)
-                #     image_label.setPixmap(pixmap)
-                # else:
-                #     image_label.setText("Brak zdjęcia samochodu")
-
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -93,51 +80,3 @@ class CarWidget(QWidget):
         except psycopg2.Error as e:
             print(f"Błąd podczas wypożyczania samochodu: {e}")
             self.db_connection.rollback()
-
-    # def return_car(self):
-    #     """
-    #     Zwraca samochód: zmienia status na 'available', usuwa rekord z tabeli rentals, 
-    #     oraz aktualizuje dane klienta (ustawienie active_rental na FALSE).
-    #     """
-    #     car_id = self.car.car_id
-
-    #     print(f"Zwrot samochodu o ID {car_id} przez klienta o ID {self.current_customer_id}.")
-    #     self.db_cursor.execute(
-    #         "SELECT customer_id FROM projekt_bd1.rentals WHERE car_id = %s",
-    #         (car_id,)
-    #     )
-    #     rented_by = self.db_cursor.fetchone()
-
-    #     if self.current_customer_id == rented_by[0]:
-    #         try:
-    #             self.db_cursor.execute(
-    #                 "SELECT status FROM projekt_bd1.cars WHERE car_id = %s",
-    #                 (car_id,)
-    #             )
-    #             car_status = self.db_cursor.fetchone()
-
-    #             if car_status and car_status[0] == 'rented':
-    #                 self.db_cursor.execute(
-    #                     "UPDATE projekt_bd1.cars SET status = 'available' WHERE car_id = %s",
-    #                     (car_id,)
-    #                 )
-
-    #                 self.db_cursor.execute(
-    #                     "UPDATE projekt_bd1.rentals SET return_date = CURRENT_DATE WHERE customer_id = %s AND car_id = %s",
-    #                     (self.current_customer_id, car_id)
-    #                 )
-
-    #                 self.db_cursor.execute(
-    #                     "UPDATE projekt_bd1.customers SET active_rental = FALSE WHERE customer_id = %s",
-    #                     (self.current_customer_id,)
-    #                 )
-
-    #                 self.db_connection.commit()
-    #                 print(f"Samochód o ID {car_id} został zwrócony pomyślnie.")
-
-    #             else:
-    #                 print(f"Samochód o ID {car_id} nie jest wypożyczony lub nie istnieje w bazie danych.")
-
-    #         except psycopg2.Error as e:
-    #             print(f"Błąd podczas zwrotu samochodu: {e}")
-    #             self.db_connection.rollback()

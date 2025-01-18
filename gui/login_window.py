@@ -1,8 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox
-from database.db_connector import initialize_connection, authenticate_user, get_connection
+from database.db_connector import initialize_connection, authenticate_user
 from PyQt6.QtGui import QFont
 from gui.register_window import RegisterWindow
-import psycopg2
 
 class LoginWindow(QWidget):
     def __init__(self):
@@ -65,21 +64,18 @@ class LoginWindow(QWidget):
             self.open_admin_window()
 
     def open_customer_window(self):
-        # from gui.customer.customer_window import CustomerWindow
         from gui.customer.customer_window import CustomerWindow
         self.customer_window = CustomerWindow(self.current_user_id)
         self.customer_window.show()
         self.hide()
 
     def open_worker_window(self):
-        # from gui.employee.worker_window import WorkerWindow
         from gui.employee.employee_window import EmployeeWindow
         self.employee_window = EmployeeWindow(self.current_user_id)
         self.employee_window.show()
         self.hide()
 
     def open_admin_window(self):
-        # from gui.admin.admin_window import AdminWindow
         from gui.admin.admin_window import AdminWindow
         self.admin_window = AdminWindow()
         self.admin_window.show()

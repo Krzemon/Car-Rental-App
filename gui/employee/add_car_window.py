@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QFormLayout, QLineEdit, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton
+from PyQt6.QtWidgets import QWidget, QFormLayout, QLineEdit, QPushButton
 
 from database.db_connector import get_connection
 

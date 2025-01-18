@@ -1,13 +1,11 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QComboBox, QSpacerItem, QSizePolicy
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QSize
 
 from database.db_connector import get_connection
 from gui.base_window import font
 from database.models import Payment
 from gui.view import View
-from gui.employee.add_car_window import AddCarWindow
-from gui.employee.delete_car_window import DeleteCarWindow
 from gui.employee.change_status_window import ChangeStatusWindow
 
 import json

@@ -1,15 +1,12 @@
-from PyQt6.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
-from PyQt6.QtGui import QFont, QIcon, QPixmap
-from PyQt6.QtCore import Qt, QSize, QTimer
+from PyQt6.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QPushButton, QTableWidget, QTableWidgetItem, QComboBox, QSpacerItem, QSizePolicy
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt, QSize
 
 from database.db_connector import get_connection
 from gui.base_window import font
 from database.models import User
 from gui.view import View
-from datetime import datetime, date
-
-import json
-import os
+from datetime import datetime
 
 class UserView(View):
     def __init__(self):
