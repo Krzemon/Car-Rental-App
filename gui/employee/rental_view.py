@@ -12,7 +12,7 @@ import json
 import os
 
 class RentalView(View):
-    def __init__(self):
+    def __init__(self, ):
         super().__init__()
 
         self.is_sort_descending = False

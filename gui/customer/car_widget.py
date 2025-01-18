@@ -21,6 +21,17 @@ class CarWidget(QWidget):
             f"resources/images/cars/{car.make.lower().replace(' ', '-')}_{car.model.lower().replace(' ', '-').replace('.', '-')}_{car.year}b.jpg"
         ]
 
+
+                # image_path = f"resources/images/cars/{make.lower().replace(' ', '-')}_{model.lower().replace(' ', '-').replace('.', '-')}_{year}a.jpg"
+                # image_label = QLabel()
+                # pixmap = QPixmap(image_path)
+                # if not pixmap.isNull():
+                #     pixmap = pixmap.scaled(800, 500, Qt.AspectRatioMode.KeepAspectRatio)
+                #     image_label.setPixmap(pixmap)
+                # else:
+                #     image_label.setText("Brak zdjęcia samochodu")
+
+
         layout = QVBoxLayout()
         self.setLayout(layout)
 
@@ -50,7 +61,8 @@ class CarWidget(QWidget):
 
     def update_image(self):
         pixmap = QPixmap(self.image_paths[self.image_index])
-        self.image_label.setPixmap(pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
+        # self.image_label.setPixmap(pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
+        self.image_label.setPixmap(pixmap.scaled(400, 250, Qt.AspectRatioMode.IgnoreAspectRatio))
 
     def rent_car(self):
         """

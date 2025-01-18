@@ -111,7 +111,7 @@ class RegisterWindow(QWidget):
             QMessageBox.information(self, "Registration Successful", "Konto zostało pomyślnie utworzone.")
 
             self.close()
-            self.open_login_window()
+            # self.open_login_window()
 
         except errors.UndefinedTable as e:
             QMessageBox.critical(self, "Database Error", "Tabela w bazie danych nie istnieje. Skontaktuj się z administratorem.")

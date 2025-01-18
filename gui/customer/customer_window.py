@@ -12,9 +12,9 @@ from datetime import date
 
 class CustomerWindow(BaseWindow):
     def __init__(self, user_id):
+        super().__init__()
         self.user_id = user_id
 
-        super().__init__()
         self.title_label.setText("Panel Klienta")
 
         self.current_page = 0
@@ -25,16 +25,7 @@ class CustomerWindow(BaseWindow):
         my_id = "SELECT customer_id FROM projekt_bd1.customers WHERE user_id=%s"
         self.cursor.execute(my_id, (self.user_id ,))        
         self.customer_id = self.cursor.fetchone()['customer_id']
-
-        my_rentals = "SELECT car_id FROM projekt_bd1.rentals WHERE customer_id = %s ORDER BY rental_date DESC LIMIT 1"
-
-        self.cursor.execute(my_rentals, (self.customer_id,))
-        car_id = self.cursor.fetchone()['car_id']
-
-        my_car = "SELECT * FROM projekt_bd1.cars WHERE car_id = %s"
-        self.cursor.execute(my_car, (car_id ,))  
-        self.customer_rentals = self.cursor.fetchone()
-
+        
         self.cars = [car for car in Car.get_all(self.connection) if car.status == 'available']
         
         self.tabs = QTabWidget(self)
@@ -129,6 +120,8 @@ class CustomerWindow(BaseWindow):
                 layout.addWidget(return_button)
             else:
                 no_rented_label = QLabel("Brak wypożyczonego samochodu.")
+                no_one_spacer = QSpacerItem(0, 50, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+                layout.addItem(no_one_spacer)
                 no_rented_label.setStyleSheet("color: red;")
                 layout.addWidget(no_rented_label)
 
@@ -254,8 +247,11 @@ class CustomerWindow(BaseWindow):
         layout.addWidget(header_label)
 
         self.history_table = QTableWidget()
+
         layout.addWidget(self.history_table)
+
         self.history_table.setColumnCount(5)
+        self.history_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.history_table.setHorizontalHeaderLabels(
             ['Data wypożyczenia', 'Data zwrotu', 'Samochód', 'Rejestracja', 'Rocznik']
         )
@@ -283,7 +279,6 @@ class CustomerWindow(BaseWindow):
                 self.history_table.setItem(row, 2, QTableWidgetItem(f"{car_make} {car_model}"))
                 self.history_table.setItem(row, 3, QTableWidgetItem(license_plate))
                 self.history_table.setItem(row, 4, QTableWidgetItem(str(car_year)))
-
             self.history_table.resizeColumnsToContents()
         except Exception as e:
             print(f"Błąd ładowania danych do tabeli: {e}")
@@ -300,6 +295,9 @@ class CustomerWindow(BaseWindow):
         header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
         header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(header_label)
+
+        cars_spacer = QSpacerItem(0, 50, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout.addItem(cars_spacer)
         
         self.grid_layout = QGridLayout()
         layout.addLayout(self.grid_layout)

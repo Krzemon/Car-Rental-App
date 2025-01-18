@@ -32,7 +32,7 @@ class User:
                 email=row.get('email'),
                 role=row.get('role'),
                 status=row.get('status'),
-                created_at=row.get('data_utworzenia')
+                created_at=row.get('created_at')
             )
         elif isinstance(row, (tuple, list)) and len(row) == 5:
             return cls(*row)
@@ -48,7 +48,7 @@ class User:
         """
         cursor = connection.cursor()
         try:
-            cursor.execute("SELECT user_id, email, role, status, data_utworzenia FROM projekt_bd1.users")
+            cursor.execute("SELECT user_id, email, role, status, created_at FROM projekt_bd1.users")
             rows = cursor.fetchall()
 
             users = [cls.from_db_row(row) for row in rows]
@@ -366,6 +366,70 @@ class Rental:
             return rentals
         except Exception as e:
             print(f"Error fetching rentals: {e}")
+            return []
+        finally:
+            cursor.close()
+
+# --------------------------------------------
+class Payment:
+    def __init__(self, payment_id, rental_id, payment_date, amount, status):
+        """
+        Inicjalizuje obiekt rental.
+        :param payment_id: ID płatności (int)
+        :param rental_id: ID wypożyczenia (int)
+        :param payment_date: Data płatności (str)
+        :param amount: Kwota płatności (float)
+        :param status: Status płatności (str)
+        """
+        self.payment_id = payment_id
+        self.rental_id = rental_id
+        self.payment_date = payment_date
+        self.amount = amount
+        self.status = status
+
+    def __repr__(self):
+        """
+        Zwraca reprezentację obiektu Payment w czytelnej formie.
+        """
+        return (f"Payment(payment_id={self.payment_id}, rental_id={self.rental_id}, "
+                f"payment_date='{self.payment_date}', amount={self.amount}, status='{self.status}')")
+    
+    @classmethod
+    def from_db_row(cls, row):
+        """
+        Tworzy obiekt Payment na podstawie wiersza z bazy danych.
+        :param row: Tuple lub RealDictRow (słownik)
+        :return: Obiekt Payment
+        """
+        if isinstance(row, dict):  # Obsługuje RealDictRow jako słownik
+            return cls(
+                payment_id=row.get('payment_id'),
+                rental_id=row.get('rental_id'),
+                payment_date=row.get('payment_date'),
+                amount=row.get('amount'),
+                status=row.get('status')
+            )
+        elif isinstance(row, (tuple, list)) and len(row) == 5:
+            return cls(*row)
+        else:
+            raise ValueError(f"Nieprawidłowy wiersz: {row}")
+        
+    @classmethod
+    def get_all(cls, connection):
+        """
+        Pobiera wszystkie płatności z bazy danych.
+        :param connection: Obiekt połączenia do bazy danych
+        :return: Lista obiektów Payment
+        """
+        cursor = connection.cursor()
+        try:
+            cursor.execute("SELECT payment_id, rental_id, payment_date, amount, status FROM projekt_bd1.payments")
+            rows = cursor.fetchall()
+
+            payments = [cls.from_db_row(row) for row in rows]
+            return payments
+        except Exception as e:
+            print(f"Error fetching payments: {e}")
             return []
         finally:
             cursor.close()
