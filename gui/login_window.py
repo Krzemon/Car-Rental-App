@@ -44,6 +44,7 @@ class LoginWindow(QWidget):
             return
         user = authenticate_user(email, password) # Weryfikacja danych logowania
         if user:
+            self.current_user_id = user['user_id']
             self.open_role_window(user['role'])
         else:
             QMessageBox.warning(self, "Login Failed", "Logowanie nie powiodło się. Spróbuj ponownie.")
@@ -66,14 +67,14 @@ class LoginWindow(QWidget):
     def open_customer_window(self):
         # from gui.customer.customer_window import CustomerWindow
         from gui.customer.customer_window import CustomerWindow
-        self.customer_window = CustomerWindow()
+        self.customer_window = CustomerWindow(self.current_user_id)
         self.customer_window.show()
         self.hide()
 
     def open_worker_window(self):
         # from gui.employee.worker_window import WorkerWindow
         from gui.employee.employee_window import EmployeeWindow
-        self.employee_window = EmployeeWindow()
+        self.employee_window = EmployeeWindow(self.current_user_id)
         self.employee_window.show()
         self.hide()
 

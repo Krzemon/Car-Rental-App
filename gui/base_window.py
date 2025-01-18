@@ -4,7 +4,9 @@ from PyQt6.QtCore import Qt, QSize, QTimer
 
 from database.db_connector import close_connection, get_connection
 
+light_font = QFont("Lora", 12)
 font = QFont("Lora", 12, QFont.Weight.Bold)
+big_font = QFont("Lora", 18, QFont.Weight.Bold)
 
 class BaseWindow(QWidget):
     def __init__(self):
@@ -17,9 +19,8 @@ class BaseWindow(QWidget):
         self.layout = QVBoxLayout(self)
         self.tool_layout = QHBoxLayout()
 
-        title_font = QFont("Lora", 12, QFont.Weight.Bold)
         self.title_label = QLabel("Panel")
-        self.title_label.setFont(title_font)
+        self.title_label.setFont(font)
 
         self.tool_layout.addWidget(self.title_label)
 
@@ -84,11 +85,9 @@ class BaseWindow(QWidget):
         if self.is_dark_mode:
             self.setStyleSheet("background-color: white; color: black;")
             self.dark_light_mode_button.setToolTip("Włącz tryb ciemny")
-            # self.status_bar.showMessage("Włączono tryb jasny", 2000)
         else:
             self.setStyleSheet("background-color: #2f2f2f; color: white;")
             self.dark_light_mode_button.setToolTip("Włącz tryb jasny")
-            # self.status_bar.showMessage("Włączono tryb ciemny", 2000)
         self.is_dark_mode = not self.is_dark_mode
 
     def logout(self):

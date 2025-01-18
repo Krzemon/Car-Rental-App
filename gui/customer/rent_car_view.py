@@ -10,7 +10,7 @@ from gui.view import View
 import json
 import os
 
-class CarView(View):
+class RentCarView(View):
     def __init__(self):
         super().__init__()
 
@@ -129,7 +129,6 @@ class CarView(View):
         self.table = QTableWidget()
         self.table.setRowCount(0)
         self.table.setColumnCount(13)
-        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setHorizontalHeaderLabels([
             'ID samochodu', 'Marka', 'Model', 'Rok', 'Nr rejestracyjny', 'Dzienna stawka',
             'VIN', 'Status', 'Rodzaj paliwa', 'Status ubezpieczenia', 'Liczba miejsc', 'Kolor', 'Typ pojazdu'
@@ -165,11 +164,13 @@ class CarView(View):
         self.fuel_filter_combo.setCurrentIndex(0)
         self.seats_filter_combo.setCurrentIndex(0)
         self.type_filter_combo.setCurrentIndex(0)
+
         self.year_min.setValue(2000)
         self.year_max.setValue(2025)
         self.price_min.setValue(0)
         self.price_max.setValue(100)
         self.active_filter = False
+
         self.display(self.cars)
 
     def apply_filter(self):

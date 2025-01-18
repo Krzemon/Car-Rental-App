@@ -1,9 +1,12 @@
 from gui.base_window import BaseWindow
 
-class EmployeeWindow(BaseWindow):
-    def __init__(self):
-        super().__init__()
+# blokowanie komorek w tabeli
+# self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
+class EmployeeWindow(BaseWindow):
+    def __init__(self, user_id):
+        super().__init__()
+        self.user_id = user_id
         # Dodatkowe elementy i logika specyficzna dla CustomerWindow
         self.setWindowTitle("Employee Window")
         

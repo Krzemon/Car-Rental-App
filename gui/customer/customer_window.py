@@ -5,19 +5,25 @@ from PyQt6.QtCore import Qt, QSize, QTimer
 from database.db_connector import get_connection
 from gui.base_window import BaseWindow
 from database.models import Car
+import psycopg2
+# from gui.customer.rent_car_view import RentCarView
 
 class CustomerWindow(BaseWindow):
-    def __init__(self):
+    def __init__(self, user_id):
+        self.user_id = user_id
         super().__init__()
         self.title_label.setText("Panel Klienta")
 
         self.current_page = 0
         self.cars_per_page = 4
-
+        # self.current_user_id = 
         connection = get_connection()
-        # Pobieranie wszystkich samochodów i filtrowanie według atrybutu status
+        cursor = connection.cursor()
+        me_query = "SELECT customer_id FROM projekt_bd1.customers WHERE user_id=%s"
+        cursor.execute(me_query, (self.user_id ,))
+        self.customer_id = cursor.fetchone()['customer_id']
         self.cars = [car for car in Car.get_all(connection) if car.status == 'available']
-
+        
         self.tabs = QTabWidget(self)
         self.cars_widget = self.create_cars_view()
         self.rentals_widget = self.create_rentals_view()
@@ -48,24 +54,8 @@ class CustomerWindow(BaseWindow):
         layout = QVBoxLayout()
         widget.setLayout(layout)
 
-        # # Tworzymy widget do filtrowania
-        # self.filter_line_edit = QLineEdit(self)
-        # self.filter_line_edit.setPlaceholderText("Wprowadź tekst do filtrowania...")
-        # self.filter_line_edit.textChanged.connect(self.filter_data)  # Po zmianie tekstu wykonaj filtrowanie
-        # layout.addWidget(self.filter_line_edit)
-
-        # # Tworzymy widget do sortowania
-        # self.sort_combo_box = QComboBox(self)
-        # self.sort_combo_box.addItem("Sortuj rosnąco")
-        # self.sort_combo_box.addItem("Sortuj malejąco")
-        # self.sort_combo_box.currentIndexChanged.connect(self.sort_data)  # Po zmianie sortowania wykonaj sortowanie
-        # layout.addWidget(self.sort_combo_box)
-
-
         self.grid_layout = QGridLayout()
         layout.addLayout(self.grid_layout)
-
-
 
         pagination_layout = QHBoxLayout()
         layout.addLayout(pagination_layout)
@@ -96,7 +86,9 @@ class CustomerWindow(BaseWindow):
         for i, car in enumerate(cars_on_page):
             row = i // 2
             col = i % 2
-            car_widget = CarWidget(car)
+            car.make = car.make.strip()
+            car.model = car.model.strip()
+            car_widget = CarWidget(self.customer_id, car)
             self.grid_layout.addWidget(car_widget, row, col)
 
     def next_page(self):
@@ -110,9 +102,12 @@ class CustomerWindow(BaseWindow):
             self.update_grid()
 
 class CarWidget(QWidget):
-    def __init__(self, car, parent=None):
+    def __init__(self, customer_id, car, parent=None):
         super().__init__(parent)
-
+        self.current_customer_id = customer_id
+        self.db_connection = get_connection()
+        self.db_cursor = self.db_connection.cursor()
+        
         self.car = car
         self.image_index = 0
         self.image_paths = [
@@ -135,15 +130,16 @@ class CarWidget(QWidget):
 
         # Opis samochodu
         description = f"{car.make} {car.model} ({car.year})"
-
         description_label = QLabel(description)
         description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(description_label)
 
-        # Przycisk "Wypożycz"
         rent_button = QPushButton("Wypożycz")
         rent_button.clicked.connect(self.rent_car)
         layout.addWidget(rent_button)
+        return_button = QPushButton("Zwróć")
+        return_button.clicked.connect(self.return_car)
+        layout.addWidget(return_button)
 
     def switch_image(self):
         self.image_index = (self.image_index + 1) % len(self.image_paths)
@@ -154,17 +150,40 @@ class CarWidget(QWidget):
         self.image_label.setPixmap(pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
 
     def rent_car(self):
-        pass
-    #     """Metoda do wypożyczenia samochodu (zmiana statusu na 'rented')"""
-    #     car_id = self.car.car_id  # Zakładam, że car_id jest dostępne w obiekcie `car`
-    #     try:
-    #         # Zaktualizowanie statusu na 'rented' w bazie danych
-    #         self.db_cursor.execute("UPDATE cars SET status = %s WHERE car_id = %s", ('rented', car_id))
-    #         self.db_connection.commit()  # Zatwierdzenie zmian
-    #         print(f"Samochód o ID {car_id} został wypożyczony.")
-    #     except psycopg2.Error as e:
-    #         print(f"Błąd podczas wypożyczania samochodu: {e}")
-    #         self.db_connection.rollback()  # Rollback w przypadku błędu
+        """
+        Wypożycza samochód: zmienia status na 'rented' oraz dodaje rekord do tabeli rentals.
+        """
+        car_id = self.car.car_id
+
+        print(f"Wypożyczanie samochodu o ID {car_id} przez klienta o ID {self.current_customer_id}.")
+        try:
+            # self.db_connection.begin()
+
+            self.db_cursor.execute(
+                "UPDATE projekt_bd1.cars SET status = 'rented' WHERE car_id = %s",
+                (car_id,)
+            )
+
+            # Sprawdzamy, czy status rzeczywiście się zmienił
+            # if self.db_cursor.rowcount == 0:
+            #     print("Samochód już jest wypożyczony lub nie istnieje.")
+            #     self.db_connection.rollback()  # Wycofanie transakcji
+            #     return
+
+            self.db_cursor.execute(
+                "INSERT INTO projekt_bd1.rentals (customer_id, car_id) VALUES (%s, %s)",
+                (self.current_customer_id, car_id)
+            )
+
+            self.db_cursor.execute(
+                "UPDATE projekt_bd1.customers SET active_rental = TRUE WHERE customer_id = %s",
+                (self.current_customer_id,)
+            )
+            self.db_connection.commit()
+
+        except psycopg2.Error as e:
+            print(f"Błąd podczas wypożyczania samochodu: {e}")
+            self.db_connection.rollback()
 
     def return_car(self, car_id):
         pass
@@ -179,3 +198,25 @@ class CarWidget(QWidget):
     #     except psycopg2.Error as e:
     #         print(f"Błąd podczas zwrotu samochodu: {e}")
     #         self.db_connection.rollback()  # Rollback w przypadku błędu
+
+
+            # def return_car(rental_id, customer_id, car_id):
+            #     # 1. Zaktualizuj return_date w tabeli rentals
+            #     cursor.execute(
+            #         "UPDATE rentals SET return_date = CURRENT_DATE WHERE rental_id = %s",
+            #         (rental_id,)
+            #     )
+
+            #     # 2. Ustaw kolumnę active_rental w tabeli customers na FALSE
+            #     cursor.execute(
+            #         "UPDATE customers SET active_rental = FALSE WHERE customer_id = %s",
+            #         (customer_id,)
+            #     )
+
+            #     # 3. Ustaw status samochodu na 'available'
+            #     cursor.execute(
+            #         "UPDATE cars SET status = 'available' WHERE car_id = %s",
+            #         (car_id,)
+            #     )
+
+            #     connection.commit()

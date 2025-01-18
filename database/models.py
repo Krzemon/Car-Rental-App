@@ -1,5 +1,5 @@
 class User:
-    def __init__(self, user_id, email, role):
+    def __init__(self, user_id, email, role, status, created_at):
         """
         Inicjalizuje obiekt User.
         :param user_id: ID użytkownika (int)
@@ -9,12 +9,14 @@ class User:
         self.user_id = user_id
         self.email = email
         self.role = role
+        self.status = status
+        self.created_at = created_at
 
     def __repr__(self):
         """
         Zwraca reprezentację obiektu User w czytelnej formie.
         """
-        return f"User(user_id={self.user_id}, email='{self.email}', role='{self.role}')"
+        return f"User(user_id={self.user_id}, email='{self.email}', role='{self.role}', status='{self.status}', created_at='{self.created_at}')"
     
     @classmethod
     def from_db_row(cls, row):
@@ -28,9 +30,11 @@ class User:
             return cls(
                 user_id=row.get('user_id'),
                 email=row.get('email'),
-                role=row.get('role')
+                role=row.get('role'),
+                status=row.get('status'),
+                created_at=row.get('data_utworzenia')
             )
-        elif isinstance(row, (tuple, list)) and len(row) == 3:
+        elif isinstance(row, (tuple, list)) and len(row) == 5:
             return cls(*row)
         else:
             raise ValueError(f"Nieprawidłowy wiersz: {row}")
@@ -44,7 +48,7 @@ class User:
         """
         cursor = connection.cursor()
         try:
-            cursor.execute("SELECT user_id, email, role FROM projekt_bd1.users")
+            cursor.execute("SELECT user_id, email, role, status, data_utworzenia FROM projekt_bd1.users")
             rows = cursor.fetchall()
 
             users = [cls.from_db_row(row) for row in rows]
@@ -280,6 +284,88 @@ class Car:
             return cars
         except Exception as e:
             print(f"Error fetching cars: {e}")
+            return []
+        finally:
+            cursor.close()
+
+
+# --------------------------------------------
+class Rental:
+    def __init__(self, rental_id, customer_id, car_id, rental_date, return_date, customer_name, phone_number, car_name, rental_status):
+        """
+        Inicjalizuje obiekt rental.
+        :param rental_id: ID wypożyczenia (int)
+        :param customer_id: ID klienta (int)
+        :param car_id: ID samochodu (int)
+        :param rental_date: Data wypożyczenia (str)
+        :param return_date: Data zwrotu (str)
+        :param customer_name: Imię i nazwisko klienta (str)
+        :param phone_number: Numer telefonu klienta (str)
+        :param car_name: Nazwa samochodu (str)
+        :param rental_status: Status wypożyczenia (str)
+        """
+        self.rental_id = rental_id
+        self.customer_id = customer_id
+        self.car_id = car_id
+        self.rental_date = rental_date
+        self.return_date = return_date
+        self.customer_name = customer_name
+        self.phone_number = phone_number
+        self.car_name = car_name
+        self.rental_status = rental_status
+
+    def __repr__(self):
+        """
+        Zwraca reprezentację obiektu Rental w czytelnej formie.
+        """
+        return (f"Rental(rental_id={self.rental_id}, customer_id={self.customer_id}, car_id={self.car_id}, "
+                f"rental_date='{self.rental_date}', return_date='{self.return_date}', customer_name='{self.customer_name}', "
+                f"phone_number='{self.phone_number}', car_name='{self.car_name}', rental_status='{self.rental_status}')")
+        
+    @classmethod
+    def from_db_row(cls, row):
+        """
+        Tworzy obiekt Rental na podstawie wiersza z bazy danych.
+        :param row: Tuple lub RealDictRow (słownik)
+        :return: Obiekt Rental
+        """
+        if isinstance(row, dict):  # Obsługuje RealDictRow jako słownik
+            return cls(
+                rental_id=row.get('rental_id'),
+                customer_id=row.get('customer_id'),
+                car_id=row.get('car_id'),
+                rental_date=row.get('rental_date'),
+                return_date=row.get('return_date'),
+                customer_name=row.get('customer_name'),
+                phone_number=row.get('phone_number'),
+                car_name=row.get('car_name'),
+                rental_status=row.get('rental_status')
+            )
+        elif isinstance(row, (tuple, list)) and len(row) == 9:
+            return cls(*row)
+        else:
+            raise ValueError(f"Nieprawidłowy wiersz: {row}")
+
+    @classmethod
+    def get_all(cls, connection):
+        """
+        Pobiera wszystkie wypożyczenia z bazy danych z widoku rental_status.
+        :param connection: Obiekt połączenia do bazy danych
+        :return: Lista obiektów Rental
+        """
+        cursor = connection.cursor()
+        try:
+            # Zapytanie do widoku rental_status
+            cursor.execute("""
+                SELECT rental_id, customer_id, car_id, rental_date, return_date, customer_name, phone_number, car_name, rental_status
+                FROM projekt_bd1.rental_status
+            """)
+            rows = cursor.fetchall()
+
+            rentals = [cls.from_db_row(row) for row in rows]
+            return rentals
+        except Exception as e:
+            print(f"Error fetching rentals: {e}")
             return []
         finally:
             cursor.close()

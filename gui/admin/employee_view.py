@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
 from PyQt6.QtGui import QFont, QIcon, QPixmap
 from PyQt6.QtCore import Qt, QSize, QTimer
 
@@ -32,17 +32,22 @@ class EmployeeView(View):
         filter_label.setFont(font)
         filter_layout.addWidget(filter_label)
 
-
-        # color_layout = QHBoxLayout()
-        # self.color_filter_combo = QComboBox()
-        # self.color_filter_combo.addItems(["Wszystkie", "Czerwony", "Niebieski", "Czarny", "Biały", "Szary", "Pomarańczowy", "Beżowy", "Zielony", "Żółty"])
-        # color_layout.addWidget(QLabel("Kolor:", alignment=Qt.AlignmentFlag.AlignLeft))
-        # color_layout.addWidget(self.color_filter_combo)
-        # filter_layout.addLayout(color_layout)
-
-
-        # zrow wpisywane filtry i sprawdzane na bieżąco???
-
+        # filtrowanie po: 'Imię', 'Nazwisko', 'Adres', 'Numer telefonu', 'Email'
+        self.filter_name = QLineEdit()
+        self.filter_name.setPlaceholderText("Imię")
+        filter_layout.addWidget(self.filter_name)
+        self.filter_surname = QLineEdit()
+        self.filter_surname.setPlaceholderText("Nazwisko")
+        filter_layout.addWidget(self.filter_surname)
+        self.filter_address = QLineEdit()
+        self.filter_address.setPlaceholderText("Adres")
+        filter_layout.addWidget(self.filter_address)
+        self.filter_phone_number = QLineEdit()
+        self.filter_phone_number.setPlaceholderText("Numer telefonu")
+        filter_layout.addWidget(self.filter_phone_number)
+        self.filter_email = QLineEdit()
+        self.filter_email.setPlaceholderText("E-mail")
+        filter_layout.addWidget(self.filter_email)
 
         spacer_for_filter = QSpacerItem(50, 10, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         filter_layout.addItem(spacer_for_filter)
@@ -62,6 +67,7 @@ class EmployeeView(View):
         self.table = QTableWidget()
         self.table.setRowCount(0)
         self.table.setColumnCount(6)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setHorizontalHeaderLabels([
             'ID pracownika', 'Imię', 'Nazwisko', 'Adres', 'Numer telefonu', 'Email'
         ])
@@ -84,6 +90,12 @@ class EmployeeView(View):
         return widget
 
     def reset_filter(self):
+        self.filter_name.clear()
+        self.filter_surname.clear()
+        self.filter_address.clear()
+        self.filter_phone_number.clear()
+        self.filter_email.clear()
+        self.active_filter = False
         self.display(self.employees)
 
     def apply_filter(self):
@@ -92,16 +104,41 @@ class EmployeeView(View):
             return
 
         filtered_employees = []
+        input_name = self.filter_name.text()
+        input_surname = self.filter_surname.text()
+        input_address = self.filter_address.text()
+        input_phone_number = self.filter_phone_number.text()
+        input_email = self.filter_email.text()
         is_filter_applied = False
 
         # filtrowanie
         for employee in self.employees:
-            # if selected_color != "Wszystkie":
+            if input_name:
+                if input_name.lower() not in employee.first_name.lower():
+                    continue
+                is_filter_applied = True
+            if input_surname:
+                if input_surname.lower() not in employee.last_name.lower():
+                    continue
+                is_filter_applied = True
+            if input_address:
+                if input_address.lower() not in employee.address.lower():
+                    continue
+                is_filter_applied = True
+            if input_phone_number:
+                if input_phone_number.lower() not in employee.phone_number.lower():
+                    continue
+                is_filter_applied = True
+            if input_email:
+                if input_email.lower() not in employee.email.lower():
+                    continue
+                is_filter_applied = True
+    
             filtered_employees.append(employee)
 
         self.active_filter = is_filter_applied
         if not filtered_employees:
-            print("Brak elementów spełniających kryteria filtrowania.")
+            # print("Brak elementów spełniających kryteria filtrowania.")
             self.table.setRowCount(0)
         else:
             self.display(filtered_employees if is_filter_applied else self.employees)

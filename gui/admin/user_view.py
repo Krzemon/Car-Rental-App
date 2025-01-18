@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
+from PyQt6.QtWidgets import QWidget, QLineEdit, QVBoxLayout, QHBoxLayout, QLabel, QFrame, QSlider, QStatusBar, QTabWidget, QPushButton, QSpinBox, QTableWidget, QCheckBox, QTableWidgetItem, QComboBox, QMessageBox, QSpacerItem, QSizePolicy
 from PyQt6.QtGui import QFont, QIcon, QPixmap
 from PyQt6.QtCore import Qt, QSize, QTimer
 
@@ -6,6 +6,7 @@ from database.db_connector import get_connection
 from gui.base_window import font
 from database.models import User
 from gui.view import View
+from datetime import datetime, date
 
 import json
 import os
@@ -32,17 +33,35 @@ class UserView(View):
         filter_label.setFont(font)
         filter_layout.addWidget(filter_label)
 
+        # filtrowanie po: 'Rola','Status', 'Email', 'Data utworzenia'
+        role_layout = QHBoxLayout()
+        self.role_filter_combo = QComboBox()
+        self.role_filter_combo.addItems(["Wszystkie", "admin", "customer", "employee"])
+        role_layout.addWidget(QLabel("Rola:", alignment=Qt.AlignmentFlag.AlignLeft))
+        role_layout.addWidget(self.role_filter_combo)
+        filter_layout.addLayout(role_layout)
+        
+        status_layout = QHBoxLayout()
+        self.status_filter_combo = QComboBox()
+        self.status_filter_combo.addItems(["Wszystkie", "active", "blocked", "deleted"])
+        status_layout.addWidget(QLabel("Status:", alignment=Qt.AlignmentFlag.AlignLeft))
+        status_layout.addWidget(self.status_filter_combo)
+        filter_layout.addLayout(status_layout)
 
-        # color_layout = QHBoxLayout()
-        # self.color_filter_combo = QComboBox()
-        # self.color_filter_combo.addItems(["Wszystkie", "Czerwony", "Niebieski", "Czarny", "Biały", "Szary", "Pomarańczowy", "Beżowy", "Zielony", "Żółty"])
-        # color_layout.addWidget(QLabel("Kolor:", alignment=Qt.AlignmentFlag.AlignLeft))
-        # color_layout.addWidget(self.color_filter_combo)
-        # filter_layout.addLayout(color_layout)
+        self.filter_email = QLineEdit()
+        self.filter_email.setPlaceholderText("E-mail")
+        filter_layout.addWidget(self.filter_email)
 
-
-        # zrow wpisywane filtry i sprawdzane na bieżąco???
-
+        date_label = QLabel("Data utworzenia konta (YYYY-MM-DD):")
+        filter_layout.addWidget(date_label)
+        self.date1_input = QLineEdit()
+        self.date1_input.setInputMask("0000-00-00")
+        self.date2_input = QLineEdit()
+        self.date2_input.setInputMask("0000-00-00")
+        date_layout = QHBoxLayout()
+        date_layout.addWidget(self.date1_input)
+        date_layout.addWidget(self.date2_input)
+        filter_layout.addLayout(date_layout)
 
         spacer_for_filter = QSpacerItem(50, 10, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         filter_layout.addItem(spacer_for_filter)
@@ -61,9 +80,10 @@ class UserView(View):
 
         self.table = QTableWidget()
         self.table.setRowCount(0)
-        self.table.setColumnCount(6)
+        self.table.setColumnCount(5)
+        self.table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.table.setHorizontalHeaderLabels([
-            'ID pracownika', 'Imię', 'Nazwisko', 'Adres', 'Numer telefonu', 'Email'
+            'ID użytkownika', 'Email', 'Rola', 'Status', 'Data utworzenia'
         ])
         self.load_to_table()
 
@@ -84,6 +104,12 @@ class UserView(View):
         return widget
 
     def reset_filter(self):
+        self.role_filter_combo.setCurrentIndex(0)
+        self.status_filter_combo.setCurrentIndex(0)
+        self.filter_email.clear()
+        self.date1_input.clear()
+        self.date2_input.clear()
+        self.active_filter = False
         self.display(self.users)
 
     def apply_filter(self):
@@ -92,26 +118,63 @@ class UserView(View):
             return
 
         filtered_users = []
+        selected_role = self.role_filter_combo.currentText()
+        selected_status = self.status_filter_combo.currentText()
+        input_email = self.filter_email.text()
+        input_date_1 = self.date1_input.text()
+        input_date_2 = self.date2_input.text()
         is_filter_applied = False
 
         # filtrowanie
         for user in self.users:
-            # if selected_color != "Wszystkie":
+            if selected_role != "Wszystkie":
+                if user.role != selected_role:
+                    continue
+                is_filter_applied = True
+            if selected_status != "Wszystkie":
+                if user.status != selected_status:
+                    continue
+                is_filter_applied = True
+            if input_email:
+                if input_email.lower() not in user.email.lower():
+                    continue
+                is_filter_applied = True
+
+            # cos nie działa w formacie daty datetime.strptime() dlatego pass
+            if input_date_1 != "__-__-____":
+                try:
+                    input_date_11 = datetime.strptime(input_date_1, "%Y-%m-%d").date()
+                    if user.created_at < input_date_11:
+                        continue
+                except ValueError:
+                    pass
+                is_filter_applied = True
+                
+            if input_date_2 != "__-__-____":
+                try:
+                    input_date_22 = datetime.strptime(input_date_2, "%Y-%m-%d").date()
+                    if user.created_at > input_date_22:
+                        continue
+                except ValueError:
+                    pass
+                is_filter_applied = True
+
             filtered_users.append(user)
 
         self.active_filter = is_filter_applied
         if not filtered_users:
-            print("Brak elementów spełniających kryteria filtrowania.")
+            # print("Brak elementów spełniających kryteria filtrowania.")
             self.table.setRowCount(0)
         else:
             self.display(filtered_users if is_filter_applied else self.users)
-            
+
     def apply_sort(self):
         sort_key = self.sort_combo.currentText()
         sort_map = {
-            "Imię": lambda user: user.first_name.lower() if user.first_name else "",
-            "Nazwisko": lambda user: user.last_name.lower() if user.last_name else "",
-            "Adres": lambda user: user.address.lower() if user.address else ""
+            "Rola": lambda user: user.role.lower() if user.role else "",
+            "Status": lambda user: user.status.lower() if user.status else "",
+            "Email": lambda user: user.email.lower() if user.email else "",
+            "Data utworzenia": lambda user: user.created_at
         }
 
         if self.sort_combo.itemText(0) == "":
@@ -133,7 +196,7 @@ class UserView(View):
     def create_sort_section(self):
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
-        self.sort_combo.addItems(["", "Rola", "Status"])
+        self.sort_combo.addItems(["", "Rola", "Status", "Email", "Data utworzenia"])
         self.sort_combo.currentIndexChanged.connect(self.apply_sort)
 
         sorter_label = QLabel("Sortuj według:", alignment=Qt.AlignmentFlag.AlignLeft)
@@ -171,6 +234,8 @@ class UserView(View):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(user.user_id)))
             self.table.setItem(row_index, 1, QTableWidgetItem(str(user.email)))
             self.table.setItem(row_index, 2, QTableWidgetItem(str(user.role)))
+            self.table.setItem(row_index, 3, QTableWidgetItem(str(user.status)))
+            self.table.setItem(row_index, 4, QTableWidgetItem(str(user.created_at)))
         self.table.resizeColumnsToContents()
 
     # --- Metody szczegółowe ---
