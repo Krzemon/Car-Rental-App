@@ -1,28 +1,41 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QComboBox, QStatusBar, QTabWidget, QGridLayout, QPushButton, QTableWidget, QTableWidgetItem, QMessageBox, QSpacerItem, QSizePolicy
 from PyQt6.QtGui import QFont, QIcon, QPixmap
 from PyQt6.QtCore import Qt, QSize, QTimer
-
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QGridLayout, QSpacerItem, QSizePolicy, QFrame
 from database.db_connector import get_connection
 from gui.base_window import BaseWindow
 from database.models import Car
 import psycopg2
-# from gui.customer.rent_car_view import RentCarView
+from gui.customer.car_widget import CarWidget
+from datetime import datetime
+from datetime import date
 
 class CustomerWindow(BaseWindow):
     def __init__(self, user_id):
         self.user_id = user_id
+
         super().__init__()
         self.title_label.setText("Panel Klienta")
 
         self.current_page = 0
         self.cars_per_page = 4
-        # self.current_user_id = 
-        connection = get_connection()
-        cursor = connection.cursor()
-        me_query = "SELECT customer_id FROM projekt_bd1.customers WHERE user_id=%s"
-        cursor.execute(me_query, (self.user_id ,))
-        self.customer_id = cursor.fetchone()['customer_id']
-        self.cars = [car for car in Car.get_all(connection) if car.status == 'available']
+
+        self.connection = get_connection()
+        self.cursor = self.connection.cursor()
+        my_id = "SELECT customer_id FROM projekt_bd1.customers WHERE user_id=%s"
+        self.cursor.execute(my_id, (self.user_id ,))        
+        self.customer_id = self.cursor.fetchone()['customer_id']
+
+        my_rentals = "SELECT car_id FROM projekt_bd1.rentals WHERE customer_id = %s ORDER BY rental_date DESC LIMIT 1"
+
+        self.cursor.execute(my_rentals, (self.customer_id,))
+        car_id = self.cursor.fetchone()['car_id']
+
+        my_car = "SELECT * FROM projekt_bd1.cars WHERE car_id = %s"
+        self.cursor.execute(my_car, (car_id ,))  
+        self.customer_rentals = self.cursor.fetchone()
+
+        self.cars = [car for car in Car.get_all(self.connection) if car.status == 'available']
         
         self.tabs = QTabWidget(self)
         self.cars_widget = self.create_cars_view()
@@ -37,23 +50,257 @@ class CustomerWindow(BaseWindow):
         self.layout.addWidget(self.tabs)
 
         self.setLayout(self.layout)
-
+# --------------------------------------------        
     def create_rentals_view(self):
-        pass
-
-    def create_faq_view(self):
-        pass
-
-    def create_history_view(self):
-        pass
-
-    def create_cars_view(self):
-        """Tworzy widok Pojazdów dla klienta."""
+        """Tworzy widok ostatniego wypożyczenia samochodu z przyciskiem zwrotu."""
         widget = QWidget()
-
         layout = QVBoxLayout()
         widget.setLayout(layout)
 
+        # Nagłówek
+        header_label = QLabel("Aktualnie wypożyczone", alignment=Qt.AlignmentFlag.AlignTop)
+        header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(header_label)
+
+        try:
+            rentals = self.get_rentals(self.customer_id)
+            rented = next((rental for rental in rentals if rental['status'] == 'rented'), None)
+
+            if rented:
+                car_id = rented['car_id']
+                make = rented['make']
+                model = rented['model']
+                year = rented['year']
+                status = rented['status']
+                daily_rate = rented['daily_rate']
+
+                license_plate = rented['license_plate']
+                rental_date = rented['rental_date']
+
+                today = date.today()
+                days_difference = (today - rental_date).days + 1
+                total_price = days_difference * daily_rate
+
+                image_path = f"resources/images/cars/{make.lower().replace(' ', '-')}_{model.lower().replace(' ', '-').replace('.', '-')}_{year}a.jpg"
+                image_label = QLabel()
+                pixmap = QPixmap(image_path)
+                if not pixmap.isNull():
+                    pixmap = pixmap.scaled(800, 500, Qt.AspectRatioMode.KeepAspectRatio)
+                    image_label.setPixmap(pixmap)
+                else:
+                    image_label.setText("Brak zdjęcia samochodu")
+
+                image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(image_label)
+
+                car_label = QLabel(f"{make} {model}")
+                car_label.setFont(QFont("Arial", 18, QFont.Weight.Bold))
+                car_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.addWidget(car_label)
+
+                # Dane szczegółowe samochodu
+                details_layout = QHBoxLayout()
+                details_label = QLabel(f"Numer rejestracyjny: {license_plate}\n"
+                                    f"Data wypożyczenia: {rental_date}")
+                details_label.setFont(QFont("Arial", 14))
+                details_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                details_layout.addWidget(details_label)
+                layout.addLayout(details_layout)
+
+                spacer_det = QSpacerItem(0, 30, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+                layout.addItem(spacer_det)
+
+                # Dane odnosnie wypozyczenia
+                rental_details_layout = QHBoxLayout()
+                rental_details_label = QLabel(f"Wypożyczony od {days_difference} dni\n"
+                                    f"Kwota zapłaty wynosi {total_price} PLN")
+                rental_details_label.setFont(QFont("Arial", 14))
+                rental_details_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                rental_details_layout.addWidget(rental_details_label)
+                layout.addLayout(rental_details_layout)
+
+                spacer = QSpacerItem(0, 50, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+                layout.addItem(spacer)
+
+                return_button = QPushButton("Zwróć samochód")
+                return_button.setFont(QFont("Arial", 12))
+                return_button.clicked.connect(lambda: self.return_car(car_id))
+                layout.addWidget(return_button)
+            else:
+                no_rented_label = QLabel("Brak wypożyczonego samochodu.")
+                no_rented_label.setStyleSheet("color: red;")
+                layout.addWidget(no_rented_label)
+
+        except psycopg2.Error as e:
+            error_label = QLabel(f"Błąd podczas pobierania danych: {e}")
+            error_label.setStyleSheet("color: red;")
+            layout.addWidget(error_label)
+
+        return widget
+
+    def return_car(self, car_id):
+        """
+        Zwraca samochód: zmienia status na 'available', aktualizuje dane w tabeli rentals 
+        i ustawia aktywne wypożyczenie klienta na FALSE.
+        :param car_id: ID samochodu do zwrotu
+        """
+        try:
+            rentals = self.get_rentals(self.customer_id)
+
+            rented = next((rental for rental in rentals if rental['status'] == 'rented'), None)
+            # SELECT r.car_id, c.make, c.model, c.status, c.license_plate, r.rental_date, r.return_date
+            if rented:
+                # Zaktualizowanie statusu samochodu na 'available'
+                update_car_status = """
+                    UPDATE projekt_bd1.cars 
+                    SET status = 'available' 
+                    WHERE car_id = %s
+                """
+                # Ustawienie daty zwrotu w tabeli rentals na bieżącą datę
+                update_rental_return_date = """
+                    UPDATE projekt_bd1.rentals 
+                    SET return_date = CURRENT_DATE 
+                    WHERE car_id = %s AND customer_id = %s AND return_date IS NULL
+                """
+                # Zaktualizowanie statusu aktywnego wypożyczenia klienta
+                update_customer_status = """
+                    UPDATE projekt_bd1.customers 
+                    SET active_rental = FALSE 
+                    WHERE customer_id = %s
+                """
+
+                self.cursor.execute(update_car_status, (car_id,))
+                self.cursor.execute(update_rental_return_date, (car_id, self.customer_id))
+                self.cursor.execute(update_customer_status, (self.customer_id,))
+
+                self.connection.commit()
+
+                print(f"Samochód o ID {car_id} został zwrócony pomyślnie.")
+
+        except Exception as e:
+            # Obsługa błędów
+            print(f"Błąd podczas zwrotu samochodu: {e}")
+            self.connection.rollback()
+# --------------------------------------------        
+    def create_faq_view(self):
+        """Tworzy widok FAQ dla klienta."""
+
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+
+        header_label = QLabel("Często Zadawane Pytania (FAQ)", alignment=Qt.AlignmentFlag.AlignTop)
+        header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(header_label)
+
+        faq_layout = QGridLayout()
+        layout.addLayout(faq_layout)
+
+        # Nagłówki kolumn
+        question_header = QLabel("Pytanie")
+        question_header.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+        answer_header = QLabel("Odpowiedź")
+        answer_header.setFont(QFont("Arial", 14, QFont.Weight.Bold))
+
+        faq_layout.addWidget(question_header, 0, 0)
+        faq_layout.addWidget(answer_header, 0, 1)
+
+        # Przykładowe pytania i odpowiedzi
+        faq = [
+            ("Czy mogę zarezerwować samochód na konkretny dzień?", "Tak, możesz zarezerwować samochód na konkretny dzień poprzez naszą stronę internetową."),
+            ("Jakie dokumenty są wymagane do wypożyczenia samochodu?", "Potrzebujesz ważnego prawa jazdy oraz dokumentu tożsamości."),
+            ("Czy są dostępne foteliki dziecięce?", "Tak, oferujemy foteliki dziecięce na życzenie."),
+            ("Czy mogę anulować rezerwację?", "Tak, rezerwację można anulować do 24 godzin przed planowanym wypożyczeniem."),
+            ("Czy samochody są ubezpieczone?", "Tak, wszystkie nasze samochody są objęte podstawowym ubezpieczeniem."),
+            ("Czy mogę zwrócić samochód w innym miejscu?", "Tak, oferujemy możliwość zwrotu w innym miejscu za dodatkową opłatą.")
+        ]
+
+        # Dodanie pytań i odpowiedzi do grid layoutu z odstępami i liniami
+        for i, (question, answer) in enumerate(faq):
+            question_label = QLabel(question)
+            question_label.setFont(QFont("Arial", 12))
+            answer_label = QLabel(answer)
+            answer_label.setFont(QFont("Arial", 12))
+            answer_label.setWordWrap(True)
+
+            faq_layout.addWidget(question_label, i * 2 + 1, 0)
+            faq_layout.addWidget(answer_label, i * 2 + 1, 1)
+
+            # Dodanie linii oddzielającej
+            if i < len(faq) - 1:
+                separator = QFrame()
+                separator.setFrameShape(QFrame.Shape.HLine)
+                separator.setFrameShadow(QFrame.Shadow.Sunken)
+                faq_layout.addWidget(separator, i * 2 + 2, 0, 1, 2)
+
+        # Dodanie pustego miejsca na dole, aby wypełnić przestrzeń
+        spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        layout.addItem(spacer)
+
+        return widget
+
+# --------------------------------------------        
+    def create_history_view(self):
+        """Tworzy widok historii wypożyczeń w formie tabeli."""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+
+        header_label = QLabel("Historia Wypożyczeń", alignment=Qt.AlignmentFlag.AlignTop)
+        header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(header_label)
+
+        self.history_table = QTableWidget()
+        layout.addWidget(self.history_table)
+        self.history_table.setColumnCount(5)
+        self.history_table.setHorizontalHeaderLabels(
+            ['Data wypożyczenia', 'Data zwrotu', 'Samochód', 'Rejestracja', 'Rocznik']
+        )
+        self.load_to_table()
+        self.history_table.horizontalHeader().setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        return widget
+
+    def load_to_table(self):
+        """Ładuje dane do tabeli."""
+        try:
+            rentals = self.get_rentals(self.customer_id)
+            self.history_table.setRowCount(len(rentals))
+
+            for row, rental in enumerate(rentals):
+                rental_date = rental['rental_date']
+                return_date = rental['return_date']
+                car_make = rental['make']
+                car_model = rental['model']
+                license_plate = rental['license_plate']
+                car_year = rental['year']
+
+                self.history_table.setItem(row, 0, QTableWidgetItem(str(rental_date)))
+                self.history_table.setItem(row, 1, QTableWidgetItem(str(return_date)))
+                self.history_table.setItem(row, 2, QTableWidgetItem(f"{car_make} {car_model}"))
+                self.history_table.setItem(row, 3, QTableWidgetItem(license_plate))
+                self.history_table.setItem(row, 4, QTableWidgetItem(str(car_year)))
+
+            self.history_table.resizeColumnsToContents()
+        except Exception as e:
+            print(f"Błąd ładowania danych do tabeli: {e}")
+
+# --------------------------------------------        
+    def create_cars_view(self):
+        """Tworzy widok Pojazdów dla klienta."""
+        widget = QWidget()
+        layout = QVBoxLayout()
+        widget.setLayout(layout)
+
+        # Nagłówek
+        header_label = QLabel("Wypożyczalnia", alignment=Qt.AlignmentFlag.AlignTop)
+        header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
+        header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(header_label)
+        
         self.grid_layout = QGridLayout()
         layout.addLayout(self.grid_layout)
 
@@ -101,122 +348,33 @@ class CustomerWindow(BaseWindow):
             self.current_page -= 1
             self.update_grid()
 
-class CarWidget(QWidget):
-    def __init__(self, customer_id, car, parent=None):
-        super().__init__(parent)
-        self.current_customer_id = customer_id
-        self.db_connection = get_connection()
-        self.db_cursor = self.db_connection.cursor()
-        
-        self.car = car
-        self.image_index = 0
-        self.image_paths = [
-            f"resources/images/cars/{car.make.lower().replace(' ', '-')}_{car.model.lower().replace(' ', '-').replace('.', '-')}_{car.year}a.jpg",
-            f"resources/images/cars/{car.make.lower().replace(' ', '-')}_{car.model.lower().replace(' ', '-').replace('.', '-')}_{car.year}b.jpg"
-        ]
-
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        # Obraz samochodu
-        self.image_label = QLabel()
-        self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(self.image_label)
-
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.switch_image)
-        self.timer.start(3000)  # 3 sekundy
-        self.update_image()
-
-        # Opis samochodu
-        description = f"{car.make} {car.model} ({car.year})"
-        description_label = QLabel(description)
-        description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(description_label)
-
-        rent_button = QPushButton("Wypożycz")
-        rent_button.clicked.connect(self.rent_car)
-        layout.addWidget(rent_button)
-        return_button = QPushButton("Zwróć")
-        return_button.clicked.connect(self.return_car)
-        layout.addWidget(return_button)
-
-    def switch_image(self):
-        self.image_index = (self.image_index + 1) % len(self.image_paths)
-        self.update_image()
-
-    def update_image(self):
-        pixmap = QPixmap(self.image_paths[self.image_index])
-        self.image_label.setPixmap(pixmap.scaled(400, 400, Qt.AspectRatioMode.KeepAspectRatio))
-
-    def rent_car(self):
+    def get_rentals(self, customer_id):
         """
-        Wypożycza samochód: zmienia status na 'rented' oraz dodaje rekord do tabeli rentals.
+        Pobiera ostatnie wypożyczenia klienta z bazy danych.
+        :param customer_id: ID klienta
+        :return: Krotka z danymi wypożyczenia (car_id, make, model, status) lub None
         """
-        car_id = self.car.car_id
-
-        print(f"Wypożyczanie samochodu o ID {car_id} przez klienta o ID {self.current_customer_id}.")
-        try:
-            # self.db_connection.begin()
-
-            self.db_cursor.execute(
-                "UPDATE projekt_bd1.cars SET status = 'rented' WHERE car_id = %s",
-                (car_id,)
-            )
-
-            # Sprawdzamy, czy status rzeczywiście się zmienił
-            # if self.db_cursor.rowcount == 0:
-            #     print("Samochód już jest wypożyczony lub nie istnieje.")
-            #     self.db_connection.rollback()  # Wycofanie transakcji
-            #     return
-
-            self.db_cursor.execute(
-                "INSERT INTO projekt_bd1.rentals (customer_id, car_id) VALUES (%s, %s)",
-                (self.current_customer_id, car_id)
-            )
-
-            self.db_cursor.execute(
-                "UPDATE projekt_bd1.customers SET active_rental = TRUE WHERE customer_id = %s",
-                (self.current_customer_id,)
-            )
-            self.db_connection.commit()
-
-        except psycopg2.Error as e:
-            print(f"Błąd podczas wypożyczania samochodu: {e}")
-            self.db_connection.rollback()
-
-    def return_car(self, car_id):
-        pass
-    #     """Metoda do zwrotu samochodu (zmiana statusu na 'available')"""
-    #     try:
-    #         # Zaktualizowanie statusu na 'available' w bazie danych
-    #         self.db_cursor.execute("UPDATE cars SET status = %s WHERE car_id = %s", ('available', car_id))
-    #         self.db_connection.commit()  # Zatwierdzenie zmian
-    #         print(f"Samochód o ID {car_id} został zwrócony.")
-    #         # Odśwież widok po zwróceniu
-    #         self.refresh_car_view()
-    #     except psycopg2.Error as e:
-    #         print(f"Błąd podczas zwrotu samochodu: {e}")
-    #         self.db_connection.rollback()  # Rollback w przypadku błędu
-
-
-            # def return_car(rental_id, customer_id, car_id):
-            #     # 1. Zaktualizuj return_date w tabeli rentals
-            #     cursor.execute(
-            #         "UPDATE rentals SET return_date = CURRENT_DATE WHERE rental_id = %s",
-            #         (rental_id,)
-            #     )
-
-            #     # 2. Ustaw kolumnę active_rental w tabeli customers na FALSE
-            #     cursor.execute(
-            #         "UPDATE customers SET active_rental = FALSE WHERE customer_id = %s",
-            #         (customer_id,)
-            #     )
-
-            #     # 3. Ustaw status samochodu na 'available'
-            #     cursor.execute(
-            #         "UPDATE cars SET status = 'available' WHERE car_id = %s",
-            #         (car_id,)
-            #     )
-
-            #     connection.commit()
+        query = """
+            SELECT r.car_id, c.make, c.model, c.status, c.license_plate, r.rental_date, r.return_date, c.year, c.daily_rate
+            FROM projekt_bd1.rentals r 
+            JOIN projekt_bd1.cars c ON r.car_id = c.car_id 
+            WHERE r.customer_id = %s 
+            ORDER BY r.rental_date DESC 
+        """
+        self.cursor.execute(query, (customer_id,))
+        rows = self.cursor.fetchall()
+        rentals = []
+        for row in rows:
+            rental = {
+                'car_id': row.get('car_id'),
+                'make': row.get('make'),
+                'model': row.get('model'),
+                'status': row.get('status'),
+                'license_plate': row.get('license_plate'),
+                'rental_date': row.get('rental_date'),
+                'return_date': row.get('return_date'),
+                'year': row.get('year'),
+                'daily_rate': row.get('daily_rate')
+            }
+            rentals.append(rental)
+        return rentals
