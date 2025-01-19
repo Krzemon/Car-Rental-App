@@ -13,7 +13,6 @@ def main():
 
     exit_code = app.exec()
 
-    # Zamknięcie połączenia przy wyjściu
     close_connection()
     sys.exit(exit_code)
 
