@@ -3,6 +3,22 @@
 ## Author
 - Przemysław Ryś
 
+## logowanie
+Aktualna baza umożliwia zalogowanie na konta:
+
+### Administrator: 
+- login: prys@poczta
+- hasło: admin
+
+### Pracownik: 
+- login: mpawlik@poczta
+- hasło: haslo
+
+### Klient (można rejestrować nowe konto): 
+- login: musial@poczta.pl
+- hasło: musial
+
+
 ## Opis
 Aplikacja wypożyczalni samochodowej poprzez system autoryzacji umożliwia różne widoki aplikacji w zależności od roli użytkownika
 
