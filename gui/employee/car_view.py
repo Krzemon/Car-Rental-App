@@ -8,6 +8,7 @@ from database.models import Car
 from gui.view import View
 from gui.employee.add_car_window import AddCarWindow
 from gui.employee.delete_car_window import DeleteCarWindow
+from gui.employee.status_car_window import StatusCarWindow
 import json
 import os
 
@@ -112,15 +113,6 @@ class CarView(View):
         price_layout.addWidget(self.price_max)
         filter_layout.addLayout(price_layout)
 
-        db_update_layout = QHBoxLayout()
-        self.add_car_button = QPushButton("Dodaj Samochód")
-        self.add_car_button.clicked.connect(self.open_add_car_window)
-        db_update_layout.addWidget(self.add_car_button)
-        self.delete_car_button = QPushButton("Usuń Samochód")
-        self.delete_car_button.clicked.connect(self.open_delete_car_window)
-        db_update_layout.addWidget(self.delete_car_button)
-        filter_layout.addLayout(db_update_layout)
-
         spacer_for_filter = QSpacerItem(50, 10, QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         filter_layout.addItem(spacer_for_filter)
 
@@ -132,6 +124,25 @@ class CarView(View):
         filter_button.clicked.connect(self.apply_filter)
         filter_layout.addWidget(filter_button)
     
+        horizontal_line = QFrame()
+        horizontal_line.setFrameShape(QFrame.Shape.HLine)
+        horizontal_line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        filter_layout.addWidget(horizontal_line)
+
+        db_update_layout = QHBoxLayout()
+        self.add_car_button = QPushButton("Dodaj Samochód")
+        self.add_car_button.clicked.connect(self.open_add_car_window)
+        db_update_layout.addWidget(self.add_car_button)
+        self.delete_car_button = QPushButton("Usuń Samochód")
+        self.delete_car_button.clicked.connect(self.open_delete_car_window)
+        db_update_layout.addWidget(self.delete_car_button)
+        filter_layout.addLayout(db_update_layout)
+
+        self.status_car_button = QPushButton("Zmień status samochodu")
+        self.status_car_button.clicked.connect(self.open_status_car_window)
+        filter_layout.addWidget(self.status_car_button)
+
         # Sortowanie
         sort_layout = self.create_sort_section()
         layout.addLayout(sort_layout)
@@ -169,7 +180,11 @@ class CarView(View):
     def open_delete_car_window(self):
         self.delete_car_window = DeleteCarWindow()
         self.delete_car_window.show()
-    
+
+    def open_status_car_window(self):
+        self.delete_car_window = StatusCarWindow()
+        self.delete_car_window.show()        
+
     def load_to_table(self):
         try:
             connection = get_connection()
@@ -177,6 +192,10 @@ class CarView(View):
             self.display(self.cars)  # Wyświetlamy pełną listę w tabeli
         except Exception as e:
             print(f"Błąd ładowania samochodów do tabeli: {e}")
+
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
 
     def reset_filter(self):
         self.color_filter_combo.setCurrentIndex(0)

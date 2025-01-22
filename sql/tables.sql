@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS projekt_bd1.users (
     email VARCHAR(255) UNIQUE NOT NULL CHECK (email LIKE '%@%'), -- Email z ograniczeniem
     password VARCHAR(255) NOT NULL, -- Hasło
     role VARCHAR(10) CHECK (role IN ('customer', 'employee', 'admin')) NOT NULL, -- Rola użytkownika
-    status VARCHAR(20) DEFAULT 'active', -- Status konta
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'banned', 'deleted')), -- Status konta
     created_at DATE DEFAULT CURRENT_DATE -- Data utworzenia konta
 );
 

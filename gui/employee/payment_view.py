@@ -97,6 +97,10 @@ class PaymentView(View):
         except Exception as e:
             print(f"Błąd ładowania płatności do tabeli: {e}")
 
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
+        
     def reset_filter(self):
         self.status_filter_combo.setCurrentIndex(0)
 

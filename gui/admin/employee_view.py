@@ -200,6 +200,10 @@ class EmployeeView(View):
         except Exception as e:
             print(f"Błąd ładowania pracowników do tabeli: {e}")
 
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
+        
     def display(self, employees):
         self.table.setRowCount(len(employees))
         for row_index, employee in enumerate(employees):

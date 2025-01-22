@@ -237,6 +237,10 @@ class RentalView(View):
         except Exception as e:
             print(f"Błąd ładowania wypożyczeń do tabeli: {e}")
 
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
+        
     def display(self, rentals):
         self.table.setRowCount(len(rentals))
         for row_index, rental in enumerate(rentals):

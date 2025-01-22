@@ -225,6 +225,10 @@ class UserView(View):
         except Exception as e:
             print(f"Błąd ładowania użytkowników do tabeli: {e}")
 
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
+        
     def display(self, users):
         self.table.setRowCount(len(users))
         for row_index, user in enumerate(users):

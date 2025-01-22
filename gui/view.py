@@ -12,6 +12,11 @@ class View(ABC):
     def load_to_table(self):
         """Ładuje dane do tabeli."""
         pass
+
+    @abstractmethod
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        pass
     
     @abstractmethod
     def reset_filter(self):

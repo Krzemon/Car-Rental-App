@@ -26,7 +26,7 @@ class DeleteCarWindow(QWidget):
         cursor = connection.cursor()
 
         try:
-            cursor.execute("DELETE FROM projekt_bd1.cars WHERE id = %s", (car_id,))
+            cursor.execute("DELETE FROM projekt_bd1.cars WHERE car_id = %s", (car_id,))
             if cursor.rowcount > 0:
                 connection.commit()  # Zatwierdzenie transakcji
                 QMessageBox.information(self, "Sukces", f"Samochód o ID {car_id} został usunięty.")

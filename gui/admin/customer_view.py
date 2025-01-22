@@ -199,6 +199,10 @@ class CustomerView(View):
         except Exception as e:
             print(f"Błąd ładowania klientów do tabeli: {e}")
 
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
+        
     def display(self, customers):
         self.table.setRowCount(len(customers))
         for row_index, customer in enumerate(customers):

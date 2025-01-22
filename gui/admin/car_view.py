@@ -160,6 +160,10 @@ class CarView(View):
         except Exception as e:
             print(f"Błąd ładowania samochodów do tabeli: {e}")
 
+    def refresh(self):
+        """Odświeża dane w widoku."""
+        self.load_to_table()
+
     def reset_filter(self):
         self.color_filter_combo.setCurrentIndex(0)
         self.fuel_filter_combo.setCurrentIndex(0)
