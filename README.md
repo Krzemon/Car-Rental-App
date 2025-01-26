@@ -34,3 +34,10 @@ Aplikacja wypożyczalni samochodowej poprzez system autoryzacji umożliwia róż
 ### Klient
   - Przeglądanie dostępnych samochodów.
   - Wypożyczanie dostępnych samochodów.
+
+
+## Diagram DFD
+![Opis obrazka](other/DFD_level_01.png)
+
+## Diagram ERD
+![Opis obrazka](other/projekt_bd1_ERD.png)
