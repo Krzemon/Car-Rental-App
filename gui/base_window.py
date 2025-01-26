@@ -9,6 +9,7 @@ font = QFont("Lora", 12, QFont.Weight.Bold)
 big_font = QFont("Lora", 18, QFont.Weight.Bold)
 
 class BaseWindow(QWidget):
+    """Klasa bazowa dla wszystkich okien aplikacji."""
     def __init__(self):
         super().__init__()
 
@@ -27,7 +28,6 @@ class BaseWindow(QWidget):
         spacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.tool_layout.addItem(spacer)
 
-        # Status połączenia
         self.status_icon = QLabel(self)
         self.tool_layout.addWidget(self.status_icon, alignment=Qt.AlignmentFlag.AlignRight)
 
@@ -42,7 +42,6 @@ class BaseWindow(QWidget):
         self.status_icon.setPixmap(self.green_circle)
         self.status_icon.setFixedSize(30, 30)
 
-        # Tryb ciemny/jasny
         self.dark_light_mode_button = QPushButton()
         self.dark_light_mode_button.setIcon(QIcon("resources/images/mode.png"))
         self.dark_light_mode_button.setIconSize(QSize(32, 32))
@@ -51,15 +50,11 @@ class BaseWindow(QWidget):
         self.dark_light_mode_button.clicked.connect(self.toggle_dark_light_mode)
         self.tool_layout.addWidget(self.dark_light_mode_button, alignment=Qt.AlignmentFlag.AlignRight)
 
-        # Przycisk wylogowania
         self.logout_button = QPushButton("Wyloguj", self)
         self.logout_button.clicked.connect(self.logout)
         self.tool_layout.addWidget(self.logout_button, alignment=Qt.AlignmentFlag.AlignRight)
 
-        # Dodanie pasek narzędzi
         self.layout.addLayout(self.tool_layout)
-        # self.status_bar = QStatusBar(self)
-        # self.layout.addWidget(self.status_bar)
 
         self.is_dark_mode = True
 

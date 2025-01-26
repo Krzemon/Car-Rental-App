@@ -5,6 +5,7 @@ from database.db_connector import get_connection
 import traceback
 
 class RegisterWindow(QWidget):
+    """ Okno rejestracji nowego użytkownika. """
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Rejestracja")
@@ -40,15 +41,14 @@ class RegisterWindow(QWidget):
     def validate_email(self, email):
         """
         Walidacja adresu e-mail.
+        param email: Adres e-mail do zwalidowania.
         """
         if not re.match(r"^[^@]+@[^@]+\.[^@]+$", email):
             return False
         return True
     
     def register(self):
-        """
-        Rejestracja nowego użytkownika.
-        """
+        """ Rejestracja nowego użytkownika."""
         first_name = self.first_name_input.text().strip()
         last_name = self.last_name_input.text().strip()
         address = self.address_input.text().strip()
@@ -59,7 +59,6 @@ class RegisterWindow(QWidget):
         if not first_name or not last_name or not address or not phone_number or not email or not password:
             QMessageBox.warning(self, "Input Error", "Proszę wypełnić wszystkie pola.")
             return
-
         if not self.validate_email(email):
             QMessageBox.warning(self, "Invalid Email", "Proszę podać poprawny adres e-mail.")
             return
@@ -68,7 +67,6 @@ class RegisterWindow(QWidget):
         try:
             conn = get_connection()
             cursor = conn.cursor()
-
             cursor.execute("SELECT * FROM projekt_bd1.users WHERE email = %s", (email,))
             if cursor.fetchone():
                 QMessageBox.warning(self, "Email Exists", "Email jest już zarejestrowany.")
@@ -85,8 +83,6 @@ class RegisterWindow(QWidget):
             result = cursor.fetchone()
             if result is None:
                 raise Exception("Nie udało się uzyskać user_id po dodaniu użytkownika.")
-
-            user_id = result['user_id']
 
             cursor.execute(
                 """
@@ -106,13 +102,9 @@ class RegisterWindow(QWidget):
                 """,
                 (email,)
             )
-
             conn.commit()
             QMessageBox.information(self, "Registration Successful", "Konto zostało pomyślnie utworzone.")
-
             self.close()
-            # self.open_login_window()
-
         except errors.UndefinedTable as e:
             QMessageBox.critical(self, "Database Error", "Tabela w bazie danych nie istnieje. Skontaktuj się z administratorem.")
         except Exception as e:

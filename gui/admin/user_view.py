@@ -9,6 +9,7 @@ from gui.view import View
 from datetime import datetime
 
 class UserView(View):
+    """Klasa widoku użytkowników."""
     def __init__(self):
         super().__init__()
 
@@ -16,6 +17,7 @@ class UserView(View):
         self.active_filter = False
 
     def create(self):
+        """Tworzy widok użytkowników."""
         widget = QWidget()
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
@@ -30,7 +32,6 @@ class UserView(View):
         filter_label.setFont(font)
         filter_layout.addWidget(filter_label)
 
-        # filtrowanie po: 'Rola','Status', 'Email', 'Data utworzenia'
         role_layout = QHBoxLayout()
         self.role_filter_combo = QComboBox()
         self.role_filter_combo.addItems(["Wszystkie", "admin", "customer", "employee"])
@@ -101,6 +102,7 @@ class UserView(View):
         return widget
 
     def reset_filter(self):
+        """Resetuje filtry."""
         self.role_filter_combo.setCurrentIndex(0)
         self.status_filter_combo.setCurrentIndex(0)
         self.filter_email.clear()
@@ -110,6 +112,7 @@ class UserView(View):
         self.display(self.users)
 
     def apply_filter(self):
+        """Filtruje dane w tabeli."""
         if not hasattr(self, 'users'):
             print("Dane nie zostały jeszcze załadowane!")
             return
@@ -160,12 +163,13 @@ class UserView(View):
 
         self.active_filter = is_filter_applied
         if not filtered_users:
-            # print("Brak elementów spełniających kryteria filtrowania.")
+            print("Brak elementów spełniających kryteria filtrowania.")
             self.table.setRowCount(0)
         else:
             self.display(filtered_users if is_filter_applied else self.users)
 
     def apply_sort(self):
+        """Sortuje dane w tabeli."""
         sort_key = self.sort_combo.currentText()
         sort_map = {
             "Rola": lambda user: user.role.lower() if user.role else "",
@@ -191,6 +195,7 @@ class UserView(View):
             print(f"Nieprawidłowy klucz sortowania: {sort_key}")
 
     def create_sort_section(self):
+        """Tworzy sekcję sortowania."""
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["", "Rola", "Status", "Email", "Data utworzenia"])
@@ -214,10 +219,12 @@ class UserView(View):
         return sort_layout
 
     def toggle_sort_order(self):
+        """Odwraca kolejność sortowania."""
         self.is_sort_descending = not self.is_sort_descending
         self.apply_sort()
 
     def load_to_table(self):
+        """Ładuje dane do tabeli."""
         try:
             connection = get_connection()
             self.users = User.get_all(connection)
@@ -230,6 +237,7 @@ class UserView(View):
         self.load_to_table()
         
     def display(self, users):
+        """Wyświetla dane w tabeli."""
         self.table.setRowCount(len(users))
         for row_index, user in enumerate(users):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(user.user_id)))
@@ -238,5 +246,3 @@ class UserView(View):
             self.table.setItem(row_index, 3, QTableWidgetItem(str(user.status)))
             self.table.setItem(row_index, 4, QTableWidgetItem(str(user.created_at)))
         self.table.resizeColumnsToContents()
-
-    # --- Metody szczegółowe ---

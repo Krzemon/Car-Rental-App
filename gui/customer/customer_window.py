@@ -39,15 +39,25 @@ class CustomerWindow(BaseWindow):
         self.tabs.addTab(self.history_widget, "Historia")
         self.layout.addWidget(self.tabs)
 
+        # self.display()
+
         self.setLayout(self.layout)
-# --------------------------------------------        
+# --------------------------------------------  
+
+
+    # self.tabs.currentChanged.connect(self.on_tab_changed)
+
+    # def display(self, cars):
+    #     """Wyświetla dane w tabeli."""
+    #     self.create_rentals_view()
+
+
     def create_rentals_view(self):
         """Tworzy widok ostatniego wypożyczenia samochodu z przyciskiem zwrotu."""
         widget = QWidget()
         layout = QVBoxLayout()
         widget.setLayout(layout)
 
-        # Nagłówek
         header_label = QLabel("Aktualnie wypożyczone", alignment=Qt.AlignmentFlag.AlignTop)
         header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
         header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -141,7 +151,6 @@ class CustomerWindow(BaseWindow):
             rentals = self.get_rentals(self.customer_id)
 
             rented = next((rental for rental in rentals if rental['status'] == 'rented'), None)
-            # SELECT r.car_id, c.make, c.model, c.status, c.license_plate, r.rental_date, r.return_date
             if rented:
                 # Zaktualizowanie statusu samochodu na 'available'
                 update_car_status = """
@@ -171,13 +180,11 @@ class CustomerWindow(BaseWindow):
                 print(f"Samochód o ID {car_id} został zwrócony pomyślnie.")
 
         except Exception as e:
-            # Obsługa błędów
             print(f"Błąd podczas zwrotu samochodu: {e}")
             self.connection.rollback()
 # --------------------------------------------        
     def create_faq_view(self):
         """Tworzy widok FAQ dla klienta."""
-
         widget = QWidget()
         layout = QVBoxLayout()
         widget.setLayout(layout)
@@ -190,7 +197,6 @@ class CustomerWindow(BaseWindow):
         faq_layout = QGridLayout()
         layout.addLayout(faq_layout)
 
-        # Nagłówki kolumn
         question_header = QLabel("Pytanie")
         question_header.setFont(QFont("Arial", 14, QFont.Weight.Bold))
         answer_header = QLabel("Odpowiedź")
@@ -199,7 +205,6 @@ class CustomerWindow(BaseWindow):
         faq_layout.addWidget(question_header, 0, 0)
         faq_layout.addWidget(answer_header, 0, 1)
 
-        # Przykładowe pytania i odpowiedzi
         faq = [
             ("Czy mogę zarezerwować samochód na konkretny dzień?", "Tak, możesz zarezerwować samochód na konkretny dzień poprzez naszą stronę internetową."),
             ("Jakie dokumenty są wymagane do wypożyczenia samochodu?", "Potrzebujesz ważnego prawa jazdy oraz dokumentu tożsamości."),
@@ -209,7 +214,6 @@ class CustomerWindow(BaseWindow):
             ("Czy mogę zwrócić samochód w innym miejscu?", "Tak, oferujemy możliwość zwrotu w innym miejscu za dodatkową opłatą.")
         ]
 
-        # Dodanie pytań i odpowiedzi do grid layoutu z odstępami i liniami
         for i, (question, answer) in enumerate(faq):
             question_label = QLabel(question)
             question_label.setFont(QFont("Arial", 12))
@@ -227,13 +231,10 @@ class CustomerWindow(BaseWindow):
                 separator.setFrameShadow(QFrame.Shadow.Sunken)
                 faq_layout.addWidget(separator, i * 2 + 2, 0, 1, 2)
 
-        # Dodanie pustego miejsca na dole, aby wypełnić przestrzeń
         spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         layout.addItem(spacer)
-
         return widget
 
-# --------------------------------------------        
     def create_history_view(self):
         """Tworzy widok historii wypożyczeń w formie tabeli."""
         widget = QWidget()
@@ -289,7 +290,6 @@ class CustomerWindow(BaseWindow):
         layout = QVBoxLayout()
         widget.setLayout(layout)
 
-        # Nagłówek
         header_label = QLabel("Wypożyczalnia", alignment=Qt.AlignmentFlag.AlignTop)
         header_label.setFont(QFont("Arial", 24, QFont.Weight.Bold))
         header_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -300,14 +300,12 @@ class CustomerWindow(BaseWindow):
         
         self.grid_layout = QGridLayout()
         layout.addLayout(self.grid_layout)
-
         pagination_layout = QHBoxLayout()
         layout.addLayout(pagination_layout)
 
         prev_button = QPushButton("Poprzednia strona")
         prev_button.clicked.connect(self.previous_page)
         pagination_layout.addWidget(prev_button)
-
         next_button = QPushButton("Następna strona")
         next_button.clicked.connect(self.next_page)
         pagination_layout.addWidget(next_button)
@@ -336,11 +334,13 @@ class CustomerWindow(BaseWindow):
             self.grid_layout.addWidget(car_widget, row, col)
 
     def next_page(self):
+        """Przechodzi do następnej strony samochodów."""
         if (self.current_page + 1) * self.cars_per_page < len(self.cars):
             self.current_page += 1
             self.update_grid()
 
     def previous_page(self):
+        """Przechodzi do poprzedniej strony samochodów."""
         if self.current_page > 0:
             self.current_page -= 1
             self.update_grid()

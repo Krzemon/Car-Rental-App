@@ -9,6 +9,7 @@ from gui.view import View
 
 
 class EmployeeView(View):
+    """Widok pracowników."""
     def __init__(self):
         super().__init__()
 
@@ -16,6 +17,7 @@ class EmployeeView(View):
         self.active_filter = False
 
     def create(self):
+        """Tworzy widok pracowników."""
         widget = QWidget()
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
@@ -88,6 +90,7 @@ class EmployeeView(View):
         return widget
 
     def reset_filter(self):
+        """"Resetuje filtry."""
         self.filter_name.clear()
         self.filter_surname.clear()
         self.filter_address.clear()
@@ -97,6 +100,7 @@ class EmployeeView(View):
         self.display(self.employees)
 
     def apply_filter(self):
+        """Filtruje dane w tabeli."""
         if not hasattr(self, 'employees'):
             print("Dane nie zostały jeszcze załadowane!")
             return
@@ -136,12 +140,13 @@ class EmployeeView(View):
 
         self.active_filter = is_filter_applied
         if not filtered_employees:
-            # print("Brak elementów spełniających kryteria filtrowania.")
+            print("Brak elementów spełniających kryteria filtrowania.")
             self.table.setRowCount(0)
         else:
             self.display(filtered_employees if is_filter_applied else self.employees)
             
     def apply_sort(self):
+        """Sortuje dane w tabeli."""
         sort_key = self.sort_combo.currentText()
         sort_map = {
             "Imię": lambda employee: employee.first_name.lower() if employee.first_name else "",
@@ -166,6 +171,7 @@ class EmployeeView(View):
             print(f"Nieprawidłowy klucz sortowania: {sort_key}")
 
     def create_sort_section(self):
+        """Tworzy sekcję sortowania."""
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["", "Imię", "Nazwisko", "Adres"])
@@ -189,10 +195,12 @@ class EmployeeView(View):
         return sort_layout
 
     def toggle_sort_order(self):
+        """Odwraca kolejność sortowania."""
         self.is_sort_descending = not self.is_sort_descending
         self.apply_sort()
 
     def load_to_table(self):
+        """Ładuje dane do tabeli."""
         try:
             connection = get_connection()
             self.employees = Employee.get_all(connection)
@@ -205,6 +213,7 @@ class EmployeeView(View):
         self.load_to_table()
         
     def display(self, employees):
+        """Wyświetla dane w tabeli."""
         self.table.setRowCount(len(employees))
         for row_index, employee in enumerate(employees):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(employee.employee_id)))
@@ -214,5 +223,3 @@ class EmployeeView(View):
             self.table.setItem(row_index, 4, QTableWidgetItem(str(employee.phone_number)))
             self.table.setItem(row_index, 5, QTableWidgetItem(str(employee.email)))
         self.table.resizeColumnsToContents()
-
-    # --- Metody szczegółowe ---

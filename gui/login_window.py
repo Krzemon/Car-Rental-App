@@ -4,6 +4,7 @@ from PyQt6.QtGui import QFont
 from gui.register_window import RegisterWindow
 
 class LoginWindow(QWidget):
+    """Okno logowania do aplikacji."""
     def __init__(self):
         super().__init__()
         self.app_title = "Car Rental System"
@@ -36,6 +37,7 @@ class LoginWindow(QWidget):
         self.setLayout(self.layout)
 
     def login(self):
+        """Logowanie użytkownika."""
         email = self.email_input.text()
         password = self.password_input.text()
         if not email or not password:
@@ -52,10 +54,12 @@ class LoginWindow(QWidget):
         """Otwórz okno rejestracji."""
         self.register_window = RegisterWindow()
         self.register_window.show()
-        # self.close()
 
     def open_role_window(self, role):
-        """W zależności od roli użytkownika otwórz odpowiednie okno."""
+        """
+        W zależności od roli użytkownika otwórz odpowiednie okno.
+        :param role: Rola użytkownika
+        """
         if role == "customer":
             self.open_customer_window()
         elif role == "employee":
@@ -64,18 +68,21 @@ class LoginWindow(QWidget):
             self.open_admin_window()
 
     def open_customer_window(self):
+        """Otwórz okno klienta."""
         from gui.customer.customer_window import CustomerWindow
         self.customer_window = CustomerWindow(self.current_user_id)
         self.customer_window.show()
         self.hide()
 
     def open_worker_window(self):
+        """Otwórz okno pracownika."""
         from gui.employee.employee_window import EmployeeWindow
         self.employee_window = EmployeeWindow(self.current_user_id)
         self.employee_window.show()
         self.hide()
 
     def open_admin_window(self):
+        """Otwórz okno administratora."""
         from gui.admin.admin_window import AdminWindow
         self.admin_window = AdminWindow()
         self.admin_window.show()

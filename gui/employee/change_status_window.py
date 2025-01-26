@@ -5,6 +5,7 @@ import json
 import os
 
 class ChangeStatusWindow(QWidget):
+    """Okno zmiany statusu płatności."""
     def __init__(self):
         super().__init__()
 
@@ -25,6 +26,7 @@ class ChangeStatusWindow(QWidget):
         self.setLayout(self.form_layout)
 
     def change_status_in_db(self):
+        """Zmienia status płatności w bazie danych."""
         payment_id = self.id_input.text()
         new_status = self.status_combo.currentText()
 

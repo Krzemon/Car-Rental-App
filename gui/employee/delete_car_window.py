@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QFormLayout, QLineEdit, QPushButton, QMessa
 from database.db_connector import get_connection
 
 class DeleteCarWindow(QWidget):
+    """Okno usuwania samochodu z bazy danych."""
     def __init__(self):
         super().__init__()
 
@@ -18,6 +19,7 @@ class DeleteCarWindow(QWidget):
         self.setLayout(self.form_layout)
 
     def remove_car_from_db(self):
+        """Usuwa samochód z bazy danych."""
         car_id = self.id_input.text()
         if not car_id:
             QMessageBox.warning(self, "Błąd", "Wprowadź ID samochodu.")

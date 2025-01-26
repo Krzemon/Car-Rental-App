@@ -8,6 +8,7 @@ from database.models import Customer
 from gui.view import View
 
 class CustomerView(View):
+    """Widok listy klientów."""
     def __init__(self):
         super().__init__()
 
@@ -15,6 +16,7 @@ class CustomerView(View):
         self.active_filter = False
 
     def create(self):
+        """Tworzy widok listy klientów."""
         widget = QWidget()
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
@@ -29,7 +31,6 @@ class CustomerView(View):
         filter_label.setFont(font)
         filter_layout.addWidget(filter_label)
 
-        # filtrowanie po: 'Imię', 'Nazwisko', 'Adres', 'Numer telefonu', 'Email'
         self.filter_name = QLineEdit()
         self.filter_name.setPlaceholderText("Imię")
         filter_layout.addWidget(self.filter_name)
@@ -87,6 +88,7 @@ class CustomerView(View):
         return widget
 
     def reset_filter(self):
+        """Resetuje filtry."""
         self.filter_name.clear()
         self.filter_surname.clear()
         self.filter_address.clear()
@@ -96,6 +98,7 @@ class CustomerView(View):
         self.display(self.customers)
 
     def apply_filter(self):
+        """Filtruje dane w tabeli."""
         if not hasattr(self, 'customers'):
             print("Dane nie zostały jeszcze załadowane!")
             return
@@ -135,12 +138,13 @@ class CustomerView(View):
 
         self.active_filter = is_filter_applied
         if not filtered_customers:
-            # print("Brak elementów spełniających kryteria filtrowania.")
+            print("Brak elementów spełniających kryteria filtrowania.")
             self.table.setRowCount(0)
         else:
             self.display(filtered_customers if is_filter_applied else self.customers)
             
     def apply_sort(self):
+        """Sortuje dane w tabeli."""
         sort_key = self.sort_combo.currentText()
         sort_map = {
             "Imię": lambda customer: customer.first_name.lower() if customer.first_name else "",
@@ -165,6 +169,7 @@ class CustomerView(View):
             print(f"Nieprawidłowy klucz sortowania: {sort_key}")
 
     def create_sort_section(self):
+        """Tworzy sekcję sortowania."""
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["", "Imię", "Nazwisko", "Adres"])
@@ -188,10 +193,12 @@ class CustomerView(View):
         return sort_layout
 
     def toggle_sort_order(self):
+        """Odwraca kolejność sortowania."""
         self.is_sort_descending = not self.is_sort_descending
         self.apply_sort()
 
     def load_to_table(self):
+        """Ładuje dane do tabeli."""
         try:
             connection = get_connection()
             self.customers = Customer.get_all(connection)
@@ -204,6 +211,7 @@ class CustomerView(View):
         self.load_to_table()
         
     def display(self, customers):
+        """Wyświetla dane w tabeli."""
         self.table.setRowCount(len(customers))
         for row_index, customer in enumerate(customers):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(customer.customer_id)))
@@ -213,7 +221,3 @@ class CustomerView(View):
             self.table.setItem(row_index, 4, QTableWidgetItem(str(customer.phone_number)))
             self.table.setItem(row_index, 5, QTableWidgetItem(str(customer.email)))
         self.table.resizeColumnsToContents()
-
-    # --- Metody szczegółowe ---
-
-

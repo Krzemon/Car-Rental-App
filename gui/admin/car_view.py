@@ -11,6 +11,7 @@ import json
 import os
 
 class CarView(View):
+    """Klasa reprezentująca widok samochodów w panelu administratora."""
     def __init__(self):
         super().__init__()
 
@@ -21,6 +22,7 @@ class CarView(View):
         self.type_translations = self.load_type_translations()
 
     def create(self):
+        """Tworzy widok samochodów."""
         widget = QWidget()
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
@@ -42,7 +44,6 @@ class CarView(View):
         color_layout.addWidget(self.color_filter_combo)
         filter_layout.addLayout(color_layout)
 
-        # Filtrowanie po rodzaju paliwa
         fuel_layout = QHBoxLayout()
         self.fuel_filter_combo = QComboBox()
         self.fuel_filter_combo.addItems(["Wszystkie", "Benzyna", "Diesel", "Elektryczny", "Hybryda"])
@@ -50,7 +51,6 @@ class CarView(View):
         fuel_layout.addWidget(self.fuel_filter_combo)
         filter_layout.addLayout(fuel_layout)
 
-        # Filtrowanie po liczbie miejsc
         seats_layout = QHBoxLayout()
         self.seats_filter_combo = QComboBox()
         self.seats_filter_combo.addItems(["Wszystkie", '2', '4', '5', '7', '9'])
@@ -58,7 +58,6 @@ class CarView(View):
         seats_layout.addWidget(self.seats_filter_combo)
         filter_layout.addLayout(seats_layout)
 
-        # Filtrowanie po typie pojazdu
         type_layout = QHBoxLayout()
         self.type_filter_combo = QComboBox()
         self.type_filter_combo.addItems(["Wszystkie", "Coupe", "Hatchback", "Kabriolet", "Kombi", "Sedan", "SUV", "Van"])
@@ -153,6 +152,7 @@ class CarView(View):
         return widget
 
     def load_to_table(self):
+        """Ładuje dane do tabeli."""
         try:
             connection = get_connection()
             self.cars = Car.get_all(connection)  # Pobieramy wszystkie samochody
@@ -165,6 +165,7 @@ class CarView(View):
         self.load_to_table()
 
     def reset_filter(self):
+        """Resetuje filtry."""
         self.color_filter_combo.setCurrentIndex(0)
         self.fuel_filter_combo.setCurrentIndex(0)
         self.seats_filter_combo.setCurrentIndex(0)
@@ -177,6 +178,7 @@ class CarView(View):
         self.display(self.cars)
 
     def apply_filter(self):
+        """Filtruje dane w tabeli."""
         if not hasattr(self, 'cars'):  # Sprawdzenie, czy dane są załadowane
             print("Dane nie zostały jeszcze załadowane!")
             return
@@ -241,6 +243,7 @@ class CarView(View):
             self.display(filtered_cars if is_filter_applied else self.cars)
 
     def apply_sort(self):
+        """Sortuje dane w tabeli."""
         sort_key = self.sort_combo.currentText()
         sort_map = {
             "Marka": lambda car: car.make.lower() if car.make else "",
@@ -266,6 +269,7 @@ class CarView(View):
             print(f"Nieprawidłowy klucz sortowania: {sort_key}")
 
     def create_sort_section(self):
+        """Tworzy sekcję sortowania."""
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["", "Marka", "Model", "Rok", "Dzienna stawka"])
@@ -289,10 +293,12 @@ class CarView(View):
         return sort_layout
 
     def toggle_sort_order(self):
+        """Odwraca kolejność sortowania."""
         self.is_sort_descending = not self.is_sort_descending
         self.apply_sort()
 
     def display(self, cars):
+        """Wyświetla samochody w tabeli."""
         self.table.setRowCount(len(cars))
         for row_index, car in enumerate(cars):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(car.car_id)))
@@ -313,9 +319,11 @@ class CarView(View):
     # --- Metody szczegółowe ---
 
     def update_year_min_label(self):
+        """Aktualizuje etykietę z rokiem minimalnym."""
         self.year_min_label.setText(str(self.year_min.value()))
 
     def update_year_max_label(self):
+        """Aktualizuje etykietę z rokiem maksymalnym."""
         self.year_max_label.setText(str(self.year_max.value()))
 
     def sync_min(self):

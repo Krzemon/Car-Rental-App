@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS projekt_bd1.payments (
 --------------------------------------------------------------------------------
 -----------    WIDOKI    --------------------
 
--- Widok, który już podałem, łączy dane o wypożyczeniach, klientach i samochodach
+-- Widok, który łączy dane o wypożyczeniach, klientach i samochodach
 CREATE OR REPLACE VIEW projekt_bd1.rental_status AS
 SELECT
     r.rental_id,

@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QFormLayout, QLineEdit, QPushButton, QCombo
 from database.db_connector import get_connection
 
 class AddCarWindow(QWidget):
+    """ Okno dodawania samochodu do bazy danych """
     def __init__(self):
         super().__init__()
 
@@ -16,9 +17,6 @@ class AddCarWindow(QWidget):
         self.license_plate_input = QLineEdit()
         self.daily_rate_input = QLineEdit()
         self.vin_input = QLineEdit()
-        # self.status_input = QLineEdit()
-        # self.status_filter_combo = QComboBox()
-        # self.status_filter_combo.addItems(["available"])
         self.seat_count_input = QLineEdit()
         self.color_input = QLineEdit()
         self.fuel_type_combo = QComboBox()
@@ -46,6 +44,7 @@ class AddCarWindow(QWidget):
         self.setLayout(self.form_layout)
 
     def add_car_to_db(self):
+        """ Dodaje samochód do bazy danych """
         make = self.make_input.text()
         model = self.model_input.text()
         year = int(self.year_input.text())

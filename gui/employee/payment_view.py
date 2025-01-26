@@ -12,6 +12,7 @@ import json
 import os
 
 class PaymentView(View):
+    """Klasa reprezentująca widok płatności."""
     def __init__(self):
         super().__init__()
         self.is_sort_descending = False
@@ -19,6 +20,7 @@ class PaymentView(View):
         self.payment_translations = self.load_payment_translations()
 
     def create(self):
+        """Tworzy widok płatności."""
         widget = QWidget()
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
@@ -86,10 +88,12 @@ class PaymentView(View):
         return widget
     
     def open_change_status_window(self):
+        """Otwiera okno zmiany statusu płatności."""
         self.change_status_window = ChangeStatusWindow()
         self.change_status_window.show()
 
     def load_to_table(self):
+        """Ładuje dane do tabeli."""
         try:
             connection = get_connection()
             self.payments = Payment.get_all(connection)
@@ -102,12 +106,13 @@ class PaymentView(View):
         self.load_to_table()
         
     def reset_filter(self):
+        """Resetuje filtry."""
         self.status_filter_combo.setCurrentIndex(0)
-
         self.active_filter = False
         self.display(self.payments)
 
     def apply_filter(self):
+        """Filtruje dane w tabeli."""
         if not hasattr(self, 'payments'):  # Sprawdzenie, czy dane są załadowane
             print("Dane nie zostały jeszcze załadowane!")
             return
@@ -117,10 +122,6 @@ class PaymentView(View):
         is_filter_applied = False
 
         for payment in self.payments:
-            # if selected_status != "Wszystkie":
-            #     if payment.status != selected_status:
-            #         continue
-            #     is_filter_applied = True
             if selected_status != "Wszystkie":
                 english_paid = {v: k for k, v in self.payment_translations.items()}.get(selected_status)
                 if english_paid is None:
@@ -140,6 +141,7 @@ class PaymentView(View):
             self.display(filtered_payments if is_filter_applied else self.payments)
 
     def apply_sort(self):
+        """Sortuje dane w tabeli."""
         sort_key = self.sort_combo.currentText()
         sort_map = {
             "Status": lambda payment: payment.status
@@ -162,6 +164,7 @@ class PaymentView(View):
             print(f"Nieprawidłowy klucz sortowania: {sort_key}")
 
     def create_sort_section(self):
+        """Tworzy sekcję sortowania."""
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["", "Status"])
@@ -185,10 +188,12 @@ class PaymentView(View):
         return sort_layout
 
     def toggle_sort_order(self):
+        """Odwraca kolejność sortowania."""
         self.is_sort_descending = not self.is_sort_descending
         self.apply_sort()
 
     def display(self, payments):
+        """Wyświetla płatności w tabeli."""
         self.table.setRowCount(len(payments))
         for row_index, payment in enumerate(payments):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(payment.payment_id)))

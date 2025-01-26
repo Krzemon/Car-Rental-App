@@ -9,6 +9,7 @@ from gui.view import View
 from datetime import datetime
 
 class RentalView(View):
+    """Widok listy wypożyczeń."""
     def __init__(self):
         super().__init__()
 
@@ -16,6 +17,7 @@ class RentalView(View):
         self.active_filter = False
 
     def create(self):
+        """Tworzy widok listy wypożyczeń."""
         widget = QWidget()
         layout = QVBoxLayout()
         Hlayout = QHBoxLayout()
@@ -104,6 +106,7 @@ class RentalView(View):
         return widget
 
     def reset_filter(self):
+        """Resetuje filtry."""
         self.status_filter_combo.setCurrentIndex(0)
         self.filter_name.clear()
         self.date1_input.clear()
@@ -114,6 +117,7 @@ class RentalView(View):
         self.display(self.rentals)
 
     def apply_filter(self):
+        """Filtruje dane wypożyczeń."""
         if not hasattr(self, 'rentals'):
             print("Dane nie zostały jeszcze załadowane!")
             return
@@ -175,12 +179,13 @@ class RentalView(View):
 
         self.active_filter = is_filter_applied
         if not filtered_rentals:
-            # print("Brak elementów spełniających kryteria filtrowania.")
+            print("Brak elementów spełniających kryteria filtrowania.")
             self.table.setRowCount(0)
         else:
             self.display(filtered_rentals if is_filter_applied else self.rentals)
             
     def apply_sort(self):
+        """Sortuje dane wypożyczeń."""
         sort_key = self.sort_combo.currentText()
         sort_map = {
             "Data wypożyczenia": lambda rental: rental.rental_date
@@ -203,6 +208,7 @@ class RentalView(View):
             print(f"Nieprawidłowy klucz sortowania: {sort_key}")
 
     def create_sort_section(self):
+        """Tworzy sekcję sortowania."""
         sort_layout = QHBoxLayout()
         self.sort_combo = QComboBox()
         self.sort_combo.addItems(["", "Data wypożyczenia"])
@@ -226,10 +232,12 @@ class RentalView(View):
         return sort_layout
 
     def toggle_sort_order(self):
+        """Odwraca kolejność sortowania."""
         self.is_sort_descending = not self.is_sort_descending
         self.apply_sort()
 
     def load_to_table(self):
+        """Ładuje dane wypożyczeń do tabeli."""
         try:
             connection = get_connection()
             self.rentals = Rental.get_all(connection)
@@ -242,6 +250,7 @@ class RentalView(View):
         self.load_to_table()
         
     def display(self, rentals):
+        """Wyświetla dane wypożyczeń w tabeli."""
         self.table.setRowCount(len(rentals))
         for row_index, rental in enumerate(rentals):
             self.table.setItem(row_index, 0, QTableWidgetItem(str(rental.rental_id)))
@@ -253,5 +262,3 @@ class RentalView(View):
             self.table.setItem(row_index, 6, QTableWidgetItem(str(rental.return_date) if rental.return_date else ''))
 
         self.table.resizeColumnsToContents()
-
-    # --- Metody szczegółowe ---

@@ -6,6 +6,7 @@ from database.db_connector import get_connection
 import psycopg2
 
 class CarWidget(QWidget):
+    """ Widget reprezentujący samochód w interfejsie klienta. """
     def __init__(self, customer_id, car, parent=None):
         super().__init__(parent)
         self.current_customer_id = customer_id
@@ -22,17 +23,14 @@ class CarWidget(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        # Obraz samochodu
         self.image_label = QLabel()
         self.image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(self.image_label)
-
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.switch_image)
         self.timer.start(3000)  # 3 sekundy
         self.update_image()
 
-        # Opis samochodu
         description = f"{car.make} {car.model} ({car.year})"
         description_label = QLabel(description)
         description_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -52,15 +50,11 @@ class CarWidget(QWidget):
         self.image_label.setPixmap(pixmap.scaled(400, 250, Qt.AspectRatioMode.IgnoreAspectRatio))
 
     def rent_car(self):
-        """
-        Wypożycza samochód: zmienia status na 'rented' oraz dodaje rekord do tabeli rentals.
-        """
+        """ Wypożycza samochód: zmienia status na 'rented' oraz dodaje rekord do tabeli rentals."""
         car_id = self.car.car_id
 
         print(f"Wypożyczanie samochodu o ID {car_id} przez klienta o ID {self.current_customer_id}.")
         try:
-            # self.db_connection.begin()
-
             self.db_cursor.execute(
                 "UPDATE projekt_bd1.cars SET status = 'rented' WHERE car_id = %s",
                 (car_id,)

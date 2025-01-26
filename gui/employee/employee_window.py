@@ -6,6 +6,7 @@ from gui.employee.rental_view import RentalView
 from gui.employee.payment_view import PaymentView
 
 class EmployeeWindow(BaseWindow):
+    """Klasa reprezentująca okno panelu pracownika."""
     def __init__(self, user):
         super().__init__()
         self.user = user
@@ -25,10 +26,8 @@ class EmployeeWindow(BaseWindow):
         self.tabs.addTab(self.rental_widget, "Wypożyczenia")
         self.tabs.addTab(self.payment_widget, "Płatności")
 
-        # Po zmianie zakładki wywołujemy metodę on_tab_changed
         self.tabs.currentChanged.connect(self.on_tab_changed)
 
-        # Dodanie zakładek do layoutu klasy bazowej
         self.layout.addWidget(self.tabs)  # Używamy layoutu z klasy BaseWindow
         self.setLayout(self.layout)  # Zachowujemy layout z klasy BaseWindow
 

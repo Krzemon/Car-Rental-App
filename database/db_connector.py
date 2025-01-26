@@ -54,7 +54,12 @@ def close_connection():
             _connection = None
 
 def authenticate_user(email, password):
-    """Sprawdza, czy dane logowania są poprawne."""
+    """
+    Sprawdza, czy dane logowania są poprawne.
+    param email: adres e-mail użytkownika
+    param password: hasło użytkownika
+    return: dane użytkownika lub None, jeśli uwierzytelnianie się nie powiodło
+    """
     try:
         conn = get_connection()
         with conn.cursor() as cursor:

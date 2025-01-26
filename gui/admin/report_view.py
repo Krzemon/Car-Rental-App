@@ -10,16 +10,13 @@ desc_2 = "Generuje raport w postaci tabeli podsumowującej wynajmy dla każdego 
 desc_3 = "Generuje raport w postaci tabeli miesięcznego przychodu z wypożyczeń."
 
 class ReportView:
+    """ Klasa odpowiedzialna za generowanie raportów. """
     def __init__(self):
-        """
-        Inicjalizuje klasę ReportView.
-        :param connection: Obiekt połączenia do bazy danych.
-        """
         self.connection = get_connection()
         self.report_description = QLabel(desc_1)
         self.report_description.setFont(light_font)
         self.report_description.setWordWrap(True)
-        # Dane i kolumny dla każdego widoku
+
         self.views = [
             {
                 "title": "Popularne samochody",
@@ -85,7 +82,6 @@ class ReportView:
 
         tabs = QTabWidget()
         for view in self.views:
-            # Tworzenie widgetu dla pojedynczego widoku
             tab = self._create_tab(view["data"], view["columns"], view["title"])
             tabs.addTab(tab, view["title"])
         left_layout.addWidget(tabs)
@@ -152,6 +148,7 @@ class ReportView:
 
 #-------------------------------------------
 class CustomerRentalSummary:
+    """ Klasa reprezentująca podsumowanie wynajmu klienta. """
     def __init__(self, customer_id, customer_name, total_rentals):
         """
         Inicjalizuje obiekt CustomerRentalSummary.
@@ -164,6 +161,7 @@ class CustomerRentalSummary:
         self.total_rentals = total_rentals
 
     def __repr__(self):
+        """ Reprezentacja obiektu jako string. """
         return f"CustomerRentalSummary(customer_id={self.customer_id}, customer_name='{self.customer_name}', total_rentals={self.total_rentals})"
     
     @classmethod
@@ -204,6 +202,7 @@ class CustomerRentalSummary:
             cursor.close()
 #--------------------------------------------
 class PopularCar:
+    """ Klasa reprezentująca popularny samochód. """
     def __init__(self, car_id, car_name, rental_count):
         """
         Inicjalizuje obiekt PopularCar.
@@ -257,6 +256,7 @@ class PopularCar:
 
 #--------------------------------------------
 class MonthlyRevenue:
+    """ Klasa reprezentująca miesięczny przychód. """
     def __init__(self, month, revenue):
         """
         Inicjalizuje obiekt MonthlyRevenue.
@@ -299,7 +299,6 @@ class MonthlyRevenue:
             cursor.execute("SELECT month, revenue FROM projekt_bd1.monthly_revenue")
             rows = cursor.fetchall()
 
-            # Tworzenie obiektów MonthlyRevenue na podstawie wierszy z bazy
             monthly_revenue_data = [cls.from_db_row(row) for row in rows]
             return monthly_revenue_data
         except Exception as e:

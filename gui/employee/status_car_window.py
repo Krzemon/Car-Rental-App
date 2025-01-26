@@ -3,6 +3,7 @@ from PyQt6.QtWidgets import QWidget, QFormLayout, QLineEdit, QComboBox, QPushBut
 from database.db_connector import get_connection
 
 class StatusCarWindow(QWidget):
+    """ Okno do zmiany statusu ubezpieczenia samochodu """
     def __init__(self):
         super().__init__()
 
@@ -23,6 +24,7 @@ class StatusCarWindow(QWidget):
         self.setLayout(self.form_layout)
 
     def change_status_in_db(self):
+        """ Zmiana statusu ubezpieczenia samochodu w bazie danych """
         car_id = self.id_input.text()
         new_status = self.insurance_status_combo.currentText()
 

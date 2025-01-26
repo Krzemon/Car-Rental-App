@@ -9,6 +9,7 @@ from gui.admin.car_view import CarView
 from gui.admin.report_view import ReportView
 
 class AdminWindow(BaseWindow):
+    """ Klasa reprezentująca okno panelu administratora """
     def __init__(self):
         super().__init__()
 
